@@ -1,4 +1,4 @@
-FROM node:22-alpine AS react-build
+FROM node:25-alpine AS react-build
 WORKDIR /react
 COPY web/react/package*.json ./
 RUN npm ci --no-audit --no-fund
