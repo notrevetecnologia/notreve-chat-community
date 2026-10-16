@@ -1,0 +1,112 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-agente_ia}
+      TZ: America/Sao_Paulo
+      PGTZ: America/Sao_Paulo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?defina POSTGRES_USER no .env} -d ${POSTGRES_DB:-agente_ia}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?defina RABBITMQ_DEFAULT_USER no .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?defina RABBITMQ_DEFAULT_PASS no .env}
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "15672:15672"
+
+  # Único processo que recebe a credencial administrativa do PostgreSQL.
+  # Ele aplica migrations, cria/endurece a role runtime e termina.
+  migrate:
+    build: .
+    image: notreve-chat-community:local
+    entrypoint: ["/app/notreve-chat-community-migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AGENTE_IA_ADMIN_DB: "postgres://${POSTGRES_USER:?defina POSTGRES_USER no .env}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@postgres:5432/${POSTGRES_DB:-agente_ia}?sslmode=disable"
+      AGENTE_IA_DB: "postgres://${APP_DATABASE_USER:?defina APP_DATABASE_USER no .env}:${APP_DATABASE_PASSWORD:?defina APP_DATABASE_PASSWORD no .env}@postgres:5432/${POSTGRES_DB:-agente_ia}?sslmode=disable"
+      AGENTE_IA_SECRETS_KEY: "${AGENTE_IA_SECRETS_KEY:?defina AGENTE_IA_SECRETS_KEY no .env}"
+      AGENTE_IA_MIGRATIONS: "/app/migrations"
+      TZ: America/Sao_Paulo
+    restart: "no"
+
+  app:
+    build: .
+    image: notreve-chat-community:local
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      AGENTE_IA_ADDR: "0.0.0.0:8080"
+      # O processo web conhece somente a role runtime NOSUPERUSER/NOBYPASSRLS.
+      AGENTE_IA_DB: "postgres://${APP_DATABASE_USER:?defina APP_DATABASE_USER no .env}:${APP_DATABASE_PASSWORD:?defina APP_DATABASE_PASSWORD no .env}@postgres:5432/${POSTGRES_DB:-agente_ia}?sslmode=disable"
+      AGENTE_IA_PASS: "${AGENTE_IA_PASS:?defina AGENTE_IA_PASS no .env}"
+      AGENTE_IA_SECRETS_KEY: "${AGENTE_IA_SECRETS_KEY:?defina AGENTE_IA_SECRETS_KEY no .env}"
+      WHATSAPP_HMAC_KEY: "${WHATSAPP_HMAC_KEY:?defina WHATSAPP_HMAC_KEY no .env}"
+      AGENTE_IA_WEBROOT: "/app/web"
+      AGENTE_IA_MIGRATIONS: "/app/migrations"
+      AGENTE_IA_REDIS: "redis://redis:6379/0"
+      AGENTE_IA_RABBITMQ: "amqp://${RABBITMQ_DEFAULT_USER:?defina RABBITMQ_DEFAULT_USER no .env}:${RABBITMQ_DEFAULT_PASS:?defina RABBITMQ_DEFAULT_PASS no .env}@rabbitmq:5672/"
+      AGENTE_IA_RESET_MFA: "${AGENTE_IA_RESET_MFA:-}"
+      TZ: America/Sao_Paulo
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      SITE_ADDRESS: "${SITE_ADDRESS:-:80}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitdata:
+  caddydata:
+  caddyconfig:

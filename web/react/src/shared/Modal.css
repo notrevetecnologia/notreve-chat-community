@@ -1,0 +1,106 @@
+.nv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(7, 28, 28, 0.42);
+  backdrop-filter: blur(3px);
+  animation: nv-modal-fade 160ms ease;
+}
+
+.nv-modal {
+  display: flex;
+  width: 100%;
+  max-height: calc(100vh - 48px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--surface, #fff);
+  box-shadow: 0 24px 60px rgba(8, 43, 41, 0.22);
+  animation: nv-modal-rise 180ms ease;
+}
+
+.nv-modal-sm { max-width: 420px; }
+.nv-modal-md { max-width: 620px; }
+.nv-modal-lg { max-width: 920px; }
+
+.nv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line, #e3ebe9);
+}
+
+.nv-modal-title {
+  margin: 0;
+  color: var(--ink, #071c1c);
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.nv-modal-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: 9px;
+  color: var(--muted, #8aa09d);
+  background: var(--surface, #fff);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.nv-modal-close:hover {
+  border-color: var(--teal, #12948e);
+  color: var(--teal, #12948e);
+  background: var(--mint, #ddf7f1);
+}
+
+.nv-modal-body {
+  overflow-y: auto;
+  padding: 22px;
+  color: var(--ink, #071c1c);
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.nv-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--line, #e3ebe9);
+  background: var(--surface-soft, #f8fbfa);
+}
+
+@keyframes nv-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nv-modal-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 720px) {
+  .nv-modal-backdrop { padding: 12px; }
+  .nv-modal { max-height: calc(100vh - 24px); }
+  .nv-modal-header,
+  .nv-modal-body,
+  .nv-modal-footer { padding-left: 16px; padding-right: 16px; }
+}

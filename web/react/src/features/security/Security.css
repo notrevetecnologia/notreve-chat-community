@@ -1,0 +1,132 @@
+.security-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.security-state {
+  margin: 0;
+  padding: 20px 0;
+  color: var(--muted, #6b7c78);
+  text-align: center;
+}
+
+.security-copy,
+.security-hint {
+  margin: 0;
+  color: var(--muted, #6b7c78);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.security-alert,
+.security-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.security-alert {
+  background: #fff0ef;
+  border: 1px solid #ffd0ca;
+  color: #a83e34;
+}
+
+.security-notice {
+  background: #effcf3;
+  border: 1px solid #c4efd3;
+  color: #21844a;
+}
+
+.security-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: 12px;
+}
+
+.security-status strong {
+  font-size: 14px;
+}
+
+.security-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c3ccd8;
+}
+
+.security-dot.is-on {
+  background: #23c977;
+  box-shadow: 0 0 0 4px rgba(35, 201, 119, .16);
+}
+
+.security-tag {
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #5269da;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.security-secret {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line, #e3ebe9);
+  border-radius: 12px;
+  background: var(--surface-soft, #f8fbfa);
+}
+
+.security-qr {
+  align-self: center;
+  width: 208px;
+  height: 208px;
+  padding: 10px;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.security-secret span {
+  color: var(--muted, #6b7c78);
+  font-size: 12px;
+}
+
+.security-secret code {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  word-break: break-all;
+}
+
+.security-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.security-field input {
+  padding: 10px 12px;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: 10px;
+  font-size: 16px;
+  letter-spacing: .18em;
+  text-align: center;
+}
+
+.security-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

@@ -1,0 +1,14 @@
+* text=auto
+
+*.sh text eol=lf
+*.sql text eol=lf
+*.go text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Caddyfile text eol=lf
+Makefile text eol=lf
+ncc text eol=lf
+Dockerfile text eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf

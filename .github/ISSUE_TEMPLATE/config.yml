@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentação e início rápido
+    url: https://github.com/notrevetecnologia/notreve-chat-community/blob/main/docs/QUICKSTART.md
+    about: Antes de abrir uma issue, confira o guia de instalação e o FAQ.
+  - name: Relatar falha de segurança (privado)
+    url: https://github.com/notrevetecnologia/notreve-chat-community/blob/main/SECURITY.md
+    about: Vulnerabilidades devem ser reportadas de forma privada, não em issue pública.

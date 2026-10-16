@@ -1,0 +1,1 @@
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS distribuicao_automatica BOOLEAN NOT NULL DEFAULT TRUE;

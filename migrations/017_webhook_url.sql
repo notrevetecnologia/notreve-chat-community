@@ -1,0 +1,1 @@
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS webhook_base_url TEXT NOT NULL DEFAULT '';

@@ -1,0 +1,1 @@
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS numeros_permitidos TEXT NOT NULL DEFAULT '';

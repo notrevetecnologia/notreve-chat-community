@@ -1,0 +1,3 @@
+ALTER TABLE settings
+  ADD COLUMN IF NOT EXISTS fallback_registrar_aprendizado BOOLEAN NOT NULL DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS fallback_transferir_humano BOOLEAN NOT NULL DEFAULT TRUE;

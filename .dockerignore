@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.exe
+*.log
+notreve-chat-community-linux
+notreve-chat-community.exe
+.env
+.env.local
+web/templates/*.bak
+web/react/node_modules
+web/react/dist

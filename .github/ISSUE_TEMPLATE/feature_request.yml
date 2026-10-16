@@ -1,0 +1,43 @@
+name: Sugerir uma melhoria
+description: Uma ideia de funcionalidade ou melhoria. Descreva em português (pt-BR).
+title: "[Ideia] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado pela sugestão! Ideias também entram no `docs/ROADMAP.md`.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual problema isso resolve?
+      description: Descreva a dor/necessidade antes da solução.
+    validations:
+      required: true
+  - type: textarea
+    id: solucao
+    attributes:
+      label: Solução proposta
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Atendimento / Inbox
+        - Agentes de IA / Tools
+        - Canais (WhatsApp/Webchat/Telegram)
+        - Campanhas
+        - API pública / Webhooks
+        - Plataforma / multi-tenant
+        - Documentação / instalação
+        - Outro
+    validations:
+      required: true

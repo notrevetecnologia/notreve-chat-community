@@ -1,0 +1,2 @@
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS requires_identity TEXT NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS allowed_identities TEXT NOT NULL DEFAULT '';

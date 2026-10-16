@@ -1,0 +1,91 @@
+.error-boundary {
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.error-boundary--app {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.error-boundary--surface {
+  min-height: 60vh;
+}
+
+.error-boundary-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(560px, 100%);
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 22px 60px rgba(8, 43, 41, 0.1);
+  text-align: center;
+}
+
+.error-boundary-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--teal);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.error-boundary-card .eyebrow {
+  color: var(--teal-dark);
+}
+
+.error-boundary-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(19px, 2.4vw, 24px);
+}
+
+.error-boundary-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.error-boundary-details {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  text-align: left;
+}
+
+.error-boundary-details summary {
+  padding: 10px 14px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.error-boundary-details code {
+  display: block;
+  padding: 0 14px 12px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.error-boundary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
