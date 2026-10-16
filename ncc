@@ -1,0 +1,129 @@
+#!/bin/sh
+#
+# ncc - comando de gerenciamento do Notreve Chat Community.
+#
+# Uso: ncc <comando>
+#   up | down | restart | logs [svc] | update | backup | restore <arquivo.sql>
+#   | doctor | version | help
+#
+# O diretorio da instalacao e descoberto automaticamente (ou defina NCC_DIR).
+#
+set -eu
+
+DEFAULT_DIR="/opt/notreve-chat-community"
+
+SELF=$(readlink -f "$0" 2>/dev/null || printf '%s' "$0")
+SELFDIR=$(CDPATH= cd -- "$(dirname -- "$SELF")" && pwd)
+
+DIR="${NCC_DIR:-}"
+if [ -z "$DIR" ] && [ -f "$SELFDIR/docker-compose.yml" ]; then
+	DIR="$SELFDIR"
+else
+	DIR="${DIR:-$DEFAULT_DIR}"
+fi
+
+log() { printf '==> %s\n' "$*"; }
+die() { printf 'erro: %s\n' "$*" >&2; exit 1; }
+
+[ -f "$DIR/docker-compose.yml" ] || die "instalacao nao encontrada em $DIR (defina NCC_DIR)"
+
+compose() {
+	(cd "$DIR" && docker compose "$@")
+}
+
+env_get() {
+	grep -E "^$1=" "$DIR/.env" 2>/dev/null | head -n1 | cut -d= -f2-
+}
+
+usage() {
+	cat <<EOF
+ncc - Notreve Chat Community
+
+Diretorio: $DIR
+
+Uso: ncc <comando>
+
+  up            Sobe os containers
+  down          Derruba os containers
+  restart       Reinicia os containers
+  logs [svc]    Mostra logs ao vivo (padrao: app)
+  update        Atualiza para a ultima release (faz backup antes)
+  backup        Faz backup do banco em backups/
+  restore <f>   Restaura um backup .sql
+  doctor        Verifica a saude da instalacao
+  version       Mostra a versao instalada
+  help          Esta ajuda
+EOF
+}
+
+cmd="${1:-help}"
+if [ $# -gt 0 ]; then
+	shift
+fi
+
+case "$cmd" in
+	up)
+		compose up -d
+		;;
+	down)
+		compose down
+		;;
+	restart)
+		compose restart
+		;;
+	logs)
+		compose logs -f --tail=200 "${1:-app}"
+		;;
+	update)
+		[ -f "$DIR/install.sh" ] || die "install.sh nao encontrado em $DIR"
+		exec sh "$DIR/install.sh" --dir "$DIR" --update "$@"
+		;;
+	backup)
+		mkdir -p "$DIR/backups"
+		file="$DIR/backups/pg-$(date +%Y%m%d-%H%M%S).sql"
+		log "Backup em $file"
+		compose exec -T postgres pg_dump -U "$(env_get POSTGRES_USER)" "$(env_get POSTGRES_DB)" > "$file"
+		log "Backup concluido."
+		;;
+	restore)
+		[ "$#" -ge 1 ] || die "uso: ncc restore <arquivo.sql>"
+		[ -f "$1" ] || die "arquivo nao encontrado: $1"
+		log "Restaurando $1 ..."
+		compose exec -T postgres psql -U "$(env_get POSTGRES_USER)" -d "$(env_get POSTGRES_DB)" < "$1"
+		log "Restauracao concluida."
+		;;
+	doctor)
+		log "Diretorio: $DIR"
+		if command -v docker >/dev/null 2>&1; then
+			log "docker: $(docker --version)"
+		else
+			die "docker nao encontrado"
+		fi
+		if (cd "$DIR" && docker compose config >/dev/null 2>&1); then
+			log "compose: configuracao valida"
+		else
+			die "compose: configuracao invalida (revise $DIR/.env)"
+		fi
+		app_id=$(compose ps -q app 2>/dev/null || true)
+		if [ -n "$app_id" ]; then
+			log "app: $(docker inspect -f '{{.State.Health.Status}}' "$app_id" 2>/dev/null || printf 'desconhecido')"
+		else
+			log "app: nao esta em execucao"
+		fi
+		log "disco: $(df -h "$DIR" | awk 'NR==2 {print $4 " livres (" $5 " usado)"}')"
+		;;
+	version)
+		if [ -f "$DIR/VERSION" ]; then
+			cat "$DIR/VERSION"
+		else
+			printf 'desconhecida\n'
+		fi
+		;;
+	help|-h|--help)
+		usage
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac

@@ -1,0 +1,13 @@
+.tenant-admin-panel {
+  border-top: 1px solid var(--line, #e3ebe9);
+}
+
+.tenant-admin-summary {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px;
+  border: 1px solid var(--line, #e3ebe9);
+  border-radius: 14px;
+  background: var(--surface-soft, #f8fbfa);
+}

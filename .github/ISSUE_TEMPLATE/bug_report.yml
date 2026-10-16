@@ -1,0 +1,49 @@
+name: Relatar um bug
+description: Algo não funcionou como esperado? Descreva em português (pt-BR).
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Preencha com o máximo de detalhes para agilizar a correção.
+        **Não inclua segredos** (tokens, senhas, chaves). Para vulnerabilidades, use o SECURITY.md.
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição do problema
+      description: O que aconteceu e o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Fui em ...
+        2. Cliquei em ...
+        3. O erro apareceu
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: SO (ex.: Ubuntu 24.04), método de instalação (install.sh/Docker), versão/tag.
+      placeholder: "Ubuntu 24.04 · install.sh · v0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / capturas
+      description: Saída de `ncc logs app`, `ncc doctor` ou prints. Remova qualquer dado sensível.
+      render: shell
+    validations:
+      required: false

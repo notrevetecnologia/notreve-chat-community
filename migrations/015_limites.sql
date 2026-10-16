@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS limites (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  max_canais INTEGER NOT NULL DEFAULT 3,
+  max_atendentes INTEGER NOT NULL DEFAULT 10,
+  max_campanhas_ativas INTEGER NOT NULL DEFAULT 2,
+  campanha_limite_diario INTEGER NOT NULL DEFAULT 100,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO limites (id) VALUES (1) ON CONFLICT (id) DO NOTHING;

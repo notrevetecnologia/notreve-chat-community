@@ -1,0 +1,101 @@
+.list-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--ui-border, rgba(18, 148, 142, 0.18));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--brand-primary, #12948e) 4%, #fff);
+}
+
+.list-pagination-summary {
+  font-size: 0.82rem;
+  color: var(--ink-soft, #68778d);
+}
+
+.list-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.list-pagination-controls button {
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #12948e) 32%, transparent);
+  background: #fff;
+  color: var(--brand-primary, #12948e);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.list-pagination-controls button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-primary, #12948e) 10%, #fff);
+}
+
+.list-pagination-controls button:disabled {
+  opacity: 0.5;
+}
+
+.list-pagination-page {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink, #1c2b43);
+}
+
+.list-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.list-filter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--ui-border, rgba(18, 148, 142, 0.18));
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-soft, #68778d);
+}
+
+.list-filter-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  color: var(--ink, #1c2b43);
+}
+
+.list-filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--ui-border, rgba(18, 148, 142, 0.18));
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink, #1c2b43);
+  min-width: 150px;
+}
+
+.list-filter-result {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brand-primary, #12948e);
+  margin-left: auto;
+}
+
+.list-filter-reset {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft, #68778d);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  padding: 6px 4px;
+}

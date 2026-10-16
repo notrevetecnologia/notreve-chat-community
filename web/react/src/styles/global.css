@@ -1,0 +1,114 @@
+:root {
+  color-scheme: light;
+  --focus-ring: 0 0 0 4px rgba(45, 210, 127, 0.22);
+  --ui-focus: 0 0 0 3px color-mix(in srgb, var(--brand-primary, #12948e) 26%, transparent);
+  --ui-border: color-mix(in srgb, var(--ink-soft, #68778d) 18%, transparent);
+  --ui-muted-surface: color-mix(in srgb, var(--brand-primary, #12948e) 5%, #fff);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --focus-ring: 0 0 0 4px color-mix(in srgb, var(--brand-primary, #12948e) 42%, transparent);
+  --ui-focus: 0 0 0 3px color-mix(in srgb, #7fdcd3 48%, transparent);
+  --ui-border: color-mix(in srgb, var(--ink-soft, #a9bcb9) 22%, transparent);
+  --ui-muted-surface: color-mix(in srgb, var(--brand-primary, #12948e) 24%, #0b1413);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--paper, #f3f6fa);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink, #142033);
+  background: var(--paper, #f3f6fa);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+button:disabled {
+  opacity: 0.58;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 0;
+  box-shadow: var(--ui-focus);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--ink-soft, #68778d) 72%, transparent);
+  opacity: 1;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: color-mix(in srgb, var(--ink, #1c2b43) 55%, transparent);
+  background: var(--surface-muted, #f0f3f7);
+}
+
+[aria-busy="true"] {
+  cursor: progress;
+}
+
+::selection {
+  color: #fff;
+  background: var(--brand-primary, #12948e);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

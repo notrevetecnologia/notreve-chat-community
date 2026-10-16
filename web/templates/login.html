@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - {{.Branding.Name}}</title>
+  {{if .Branding.FaviconURL}}<link rel="icon" href="{{.Branding.FaviconURL}}">{{end}}
+  <link rel="stylesheet" href="/static/style.css?v=20260821-3">
+  <style>
+    :root {
+      --accent: {{.Branding.PrimaryColor}};
+      --accent-dark: {{.Branding.SecondaryColor}};
+      --indigo: {{.Branding.AccentColor}};
+      --bg: {{.Branding.BackgroundColor}};
+      --brand-primary: {{.Branding.PrimaryColor}};
+      --brand-secondary: {{.Branding.SecondaryColor}};
+      --brand-accent: {{.Branding.AccentColor}};
+      --brand-loading: {{.Branding.LoadingColor}};
+    }
+  </style>
+</head>
+<body class="login-body">
+  <form class="login-card" method="post" action="/login">
+    <div class="brand center">
+      <span class="brand-dot">◆</span>
+      {{if .Branding.LogoURL}}<span><img src="{{.Branding.LogoURL}}" alt="" style="height:20px;vertical-align:middle"></span>{{end}}
+      <span>{{.Branding.Name}}</span>
+    </div>
+    <h1>Entrar</h1>
+    {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+    <label>Usuário</label>
+    <input type="text" name="username" autofocus autocomplete="username">
+    <label>Senha</label>
+    <input type="password" name="password" autocomplete="current-password">
+    <button type="submit" class="btn primary">Entrar</button>
+  </form>
+</body>
+</html>

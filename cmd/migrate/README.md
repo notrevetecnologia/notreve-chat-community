@@ -1,0 +1,1 @@
+Comando interno para aplicar migrations em CI e operação.

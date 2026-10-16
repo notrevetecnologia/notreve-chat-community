@@ -1,0 +1,24 @@
+notreve-chat-community
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.env
+.env.local
+storage/
+tmp/
+
+notreve-chat-community-linux
+*.log
+*.tar
+*.orig
+*.codex-context-backup
+.codex-remote-attachments/
+.gocache*/
+web/react/node_modules/
+web/react/dist/
+
+# Artefato de agente/ambiente de dev (contém caminhos locais; não é doc do produto)
+docs/REVIEW_PROMPT.md

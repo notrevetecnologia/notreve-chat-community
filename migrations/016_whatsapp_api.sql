@@ -1,0 +1,1 @@
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS whatsapp_admin_token TEXT NOT NULL DEFAULT '';

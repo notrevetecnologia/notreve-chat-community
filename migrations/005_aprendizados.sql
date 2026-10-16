@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS aprendizados (
+  id SERIAL PRIMARY KEY,
+  pergunta TEXT NOT NULL,
+  canal TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'novo',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
