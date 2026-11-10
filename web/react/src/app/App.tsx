@@ -27,6 +27,7 @@ import { AppShell } from './app-shell'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { applyBrandingTheme, brandingDocumentTitle, type Branding } from '../branding'
 import { playNewMessageSound, showDesktopNotification, startTitleAlert, stopTitleAlert } from '../shared/notifications'
+import { Icon, type IconName } from '../shared/icons'
 
 type SessionIdentity = {
   id?: number
@@ -597,13 +598,13 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
       <section className="page-intro">
         <div>
           <span className="eyebrow">{brand.eyebrow}</span>
-          <h1>{greeting}, {firstName} <span aria-hidden="true">✦</span></h1>
+          <h1>{greeting}, {firstName} <span aria-hidden="true"><Icon name="sparkles" /></span></h1>
           <p>Uma visão clara para sua equipe agir rápido, com contexto e inteligência em cada conversa.</p>
         </div>
         <div className="intro-actions">
           {canSearch && (
             <button className="secondary-button" type="button" aria-label="Buscar em toda a operação" onClick={onOpenSearch}>
-              <span aria-hidden="true">⌕</span>
+              <Icon name="search" />
               <span>Buscar em tudo</span>
               <kbd>Ctrl K</kbd>
             </button>
@@ -611,7 +612,7 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
           {canOpenInbox && (
             <button className="primary-button" type="button" onClick={onOpenInbox}>
               Abrir Inbox
-              <span aria-hidden="true">→</span>
+              <Icon name="arrow-right" />
             </button>
           )}
         </div>
@@ -644,7 +645,7 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
         </div>
 
         {loading && !data ? (
-          <div className="workspace-state">Carregando a operação…</div>
+          <DashboardSkeleton />
         ) : !data ? (
           <div className="workspace-state">Sem dados para exibir.</div>
         ) : (
@@ -655,17 +656,17 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
                   <strong>{data.failures.open} falha(s) do agente em aberto</strong>
                   <span>{failureTypeSummary(data.failures.by_type)}</span>
                 </div>
-                {onOpenLearning && <button className="secondary-button" type="button" onClick={onOpenLearning}>Ver Aprendizado →</button>}
+                {onOpenLearning && <button className="secondary-button" type="button" onClick={onOpenLearning}>Ver Aprendizado<Icon name="arrow-right" /></button>}
               </div>
             )}
 
             <div className="dashboard-kpis">
-              <DashboardKpi icon="✧" tone="blue" label="Novas no período" value={formatNumber(data.conversations.novas)} detail={`${formatNumber(data.conversations.total)} conversas no total`} />
-              <DashboardKpi icon="◌" tone="green" label="Em aberto" value={formatNumber(openConversations)} detail={`IA ${formatNumber(data.conversations.ia)} · fila ${formatNumber(data.conversations.aguardando)} · atendendo ${formatNumber(data.conversations.atendendo)}`} />
-              <DashboardKpi icon="✓" tone="teal" label="Encerradas" value={formatNumber(data.conversations.encerradas)} detail="No total do escopo" />
-              <DashboardKpi icon="⌛" tone="amber" label="Aguardando humano" value={formatNumber(data.queue.aguardando)} detail={data.queue.aguardando > 0 ? `Espera média ${formatWait(data.queue.espera_media_segundos)} · maior ${formatWait(data.queue.espera_max_segundos)}` : 'Nenhuma conversa na fila'} />
-              {reports && <DashboardKpi icon="★" tone="violet" label="Satisfação (CSAT)" value={data.satisfaction && data.satisfaction.avaliacoes > 0 ? `${data.satisfaction.media.toFixed(1)}/5` : '—'} detail={`${formatNumber(data.satisfaction?.avaliacoes ?? 0)} avaliações no período`} />}
-              <DashboardKpi icon="⇄" tone="teal" label="Resolução pela IA" value={formatPercent(data.resolution.taxa_ia)} detail={`IA ${formatNumber(data.resolution.ia_resolvidas)} · transferidas ${formatNumber(data.resolution.transferidas)}`} />
+              <DashboardKpi icon="sparkles" tone="blue" label="Novas no período" value={formatNumber(data.conversations.novas)} detail={`${formatNumber(data.conversations.total)} conversas no total`} />
+              <DashboardKpi icon="inbox" tone="green" label="Em aberto" value={formatNumber(openConversations)} detail={`IA ${formatNumber(data.conversations.ia)} · fila ${formatNumber(data.conversations.aguardando)} · atendendo ${formatNumber(data.conversations.atendendo)}`} />
+              <DashboardKpi icon="check" tone="teal" label="Encerradas" value={formatNumber(data.conversations.encerradas)} detail="No total do escopo" />
+              <DashboardKpi icon="clock" tone="amber" label="Aguardando humano" value={formatNumber(data.queue.aguardando)} detail={data.queue.aguardando > 0 ? `Espera média ${formatWait(data.queue.espera_media_segundos)} · maior ${formatWait(data.queue.espera_max_segundos)}` : 'Nenhuma conversa na fila'} />
+              {reports && <DashboardKpi icon="star" tone="violet" label="Satisfação (CSAT)" value={data.satisfaction && data.satisfaction.avaliacoes > 0 ? `${data.satisfaction.media.toFixed(1)}/5` : '—'} detail={`${formatNumber(data.satisfaction?.avaliacoes ?? 0)} avaliações no período`} />}
+              <DashboardKpi icon="agents" tone="teal" label="Resolução pela IA" value={formatPercent(data.resolution.taxa_ia)} detail={`IA ${formatNumber(data.resolution.ia_resolvidas)} · transferidas ${formatNumber(data.resolution.transferidas)}`} />
             </div>
 
             <div className="dashboard-panels">
@@ -753,9 +754,9 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
                   </div>
                 </header>
                 <div className="dashboard-actions">
-                  {canOpenInbox && <button className="overview-card overview-card-action" type="button" onClick={onOpenInbox}><div className="overview-icon blue" aria-hidden="true">→</div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Assumir atendimentos</strong><small>Entre no Inbox e veja o que está acontecendo.</small></div></button>}
-                  {onOpenAgents && <button className="overview-card overview-card-action" type="button" onClick={onOpenAgents}><div className="overview-icon green" aria-hidden="true">✦</div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Desenhar sua IA</strong><small>Prepare agentes, conhecimento e automações.</small></div></button>}
-                  {onOpenChannels && <button className="overview-card overview-card-action" type="button" onClick={onOpenChannels}><div className="overview-icon purple" aria-hidden="true">◈</div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Conectar um canal</strong><small>Leve sua operação para onde seu cliente está.</small></div></button>}
+                  {canOpenInbox && <button className="overview-card overview-card-action" type="button" onClick={onOpenInbox}><div className="overview-icon blue" aria-hidden="true"><Icon name="inbox" /></div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Assumir atendimentos</strong><small>Entre no Inbox e veja o que está acontecendo.</small></div></button>}
+                  {onOpenAgents && <button className="overview-card overview-card-action" type="button" onClick={onOpenAgents}><div className="overview-icon green" aria-hidden="true"><Icon name="agents" /></div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Desenhar sua IA</strong><small>Prepare agentes, conhecimento e automações.</small></div></button>}
+                  {onOpenChannels && <button className="overview-card overview-card-action" type="button" onClick={onOpenChannels}><div className="overview-icon purple" aria-hidden="true"><Icon name="channels" /></div><div className="overview-card-copy"><span>Atalho da operação</span><strong>Conectar um canal</strong><small>Leve sua operação para onde seu cliente está.</small></div></button>}
                 </div>
               </article>
             </div>
@@ -766,16 +767,60 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
   )
 }
 
-function DashboardKpi({ icon, tone, label, value, detail }: { icon: string; tone: string; label: string; value: string; detail: string }) {
+function DashboardKpi({ icon, tone, label, value, detail }: { icon: IconName; tone: string; label: string; value: string; detail: string }) {
   return (
     <article className={`dashboard-kpi dashboard-kpi--${tone}`}>
-      <span className="dashboard-kpi-icon" aria-hidden="true">{icon}</span>
+      <span className="dashboard-kpi-icon" aria-hidden="true"><Icon name={icon} /></span>
       <div className="dashboard-kpi-copy">
         <span>{label}</span>
         <strong>{value}</strong>
         <small>{detail}</small>
       </div>
     </article>
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="dashboard-skeleton" role="status" aria-busy="true" aria-label="Carregando a visão geral">
+      <div className="dashboard-kpis">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div className="dashboard-kpi skeleton-card" key={index}>
+            <span className="skeleton skeleton-icon" />
+            <div className="skeleton-lines">
+              <span className="skeleton skeleton-line skeleton-line--sm" />
+              <span className="skeleton skeleton-line skeleton-line--lg" />
+              <span className="skeleton skeleton-line" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="dashboard-panels">
+        <div className="dashboard-panel skeleton-panel">
+          <span className="skeleton skeleton-line skeleton-line--md" />
+          <span className="skeleton skeleton-chart" />
+        </div>
+        <div className="dashboard-panel skeleton-panel">
+          <span className="skeleton skeleton-line skeleton-line--md" />
+          <span className="skeleton skeleton-line" />
+          <span className="skeleton skeleton-line" />
+          <span className="skeleton skeleton-line" />
+        </div>
+      </div>
+      <div className="dashboard-panels">
+        <div className="dashboard-panel skeleton-panel">
+          <span className="skeleton skeleton-line skeleton-line--md" />
+          <span className="skeleton skeleton-line" />
+          <span className="skeleton skeleton-line" />
+          <span className="skeleton skeleton-line" />
+        </div>
+        <div className="dashboard-panel skeleton-panel">
+          <span className="skeleton skeleton-line skeleton-line--md" />
+          <span className="skeleton skeleton-card-inline" />
+          <span className="skeleton skeleton-card-inline" />
+        </div>
+      </div>
+    </div>
   )
 }
 

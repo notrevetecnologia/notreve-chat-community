@@ -68,6 +68,11 @@
   background: var(--mint, #ddf7f1);
 }
 
+.nv-modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
 .nv-modal-body {
   overflow-y: auto;
   padding: 22px;

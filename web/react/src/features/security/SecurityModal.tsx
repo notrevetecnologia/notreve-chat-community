@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Modal } from '../../shared/Modal'
+import { Icon } from '../../shared/icons'
 import { confirmMFA, disableMFA, loadMFAStatus, startMFASetup, type MFAStatus } from './securityApi'
 import './Security.css'
 
@@ -14,6 +15,7 @@ export function SecurityModal({ open, onClose }: SecurityModalProps) {
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -23,6 +25,7 @@ export function SecurityModal({ open, onClose }: SecurityModalProps) {
     setNotice(null)
     setSetup(null)
     setCode('')
+    setCopied(false)
     try {
       setStatus(await loadMFAStatus())
     } catch (loadError) {
@@ -82,60 +85,121 @@ export function SecurityModal({ open, onClose }: SecurityModalProps) {
     }
   }
 
+  const copySecret = async () => {
+    if (!setup?.secret) return
+    try {
+      await navigator.clipboard.writeText(setup.secret)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError('Não foi possível copiar a chave. Copie manualmente.')
+    }
+  }
+
+  const closeSetup = () => {
+    setSetup(null)
+    setCode('')
+    setError(null)
+    setCopied(false)
+  }
+
   return (
     <Modal open={open} onClose={onClose} title="Segurança da conta" size="sm">
       {loading ? <p className="security-state">Carregando…</p> : (
         <div className="security-body">
           {error && <div className="security-alert" role="alert">{error}</div>}
           {notice && <div className="security-notice" role="status">{notice}</div>}
-          {status && (
+          {status && (setup ? (
+            <div className="security-step">
+              <button className="security-back" type="button" onClick={closeSetup}>
+                <Icon name="chevron-left" />
+                Voltar
+              </button>
+
+              <div className="security-hero">
+                <span className="security-hero-icon" aria-hidden="true"><Icon name="shield" /></span>
+                <div>
+                  <h3>Ative a autenticação em duas etapas</h3>
+                  <p>Escaneie o QR Code ou digite a chave no seu app autenticador e informe o código gerado.</p>
+                </div>
+              </div>
+
+              {setup.qr && <img className="security-qr" src={setup.qr} alt="QR Code para configurar o autenticador" width={200} height={200} />}
+
+              <div className="security-secret">
+                <span>Chave de configuração</span>
+                <div className="security-secret-row">
+                  <code>{setup.secret}</code>
+                  <button className="security-copy" type="button" onClick={() => void copySecret()}>
+                    <Icon name={copied ? 'check' : 'copy'} />
+                    {copied ? 'Copiado' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+
+              <label className="security-field">
+                <span>Código de 6 dígitos</span>
+                <input
+                  autoFocus
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                />
+              </label>
+
+              <div className="security-actions">
+                <button className="secondary-button" type="button" disabled={busy} onClick={closeSetup}>Cancelar</button>
+                <button className="primary-button" type="button" disabled={busy} onClick={() => void confirm()}>Ativar proteção</button>
+              </div>
+            </div>
+          ) : (
             <>
-              <p className="security-copy">A autenticação em duas etapas (2FA) pede um código do seu app autenticador a cada login.</p>
+              <div className="security-hero">
+                <span className="security-hero-icon" aria-hidden="true"><Icon name="shield" /></span>
+                <div>
+                  <h3>Autenticação em duas etapas</h3>
+                  <p>A 2FA pede um código do seu app autenticador a cada login, protegendo a conta mesmo se a senha vazar.</p>
+                </div>
+              </div>
+
               <div className="security-status">
                 <span className={`security-dot${status.enabled ? ' is-on' : ''}`} aria-hidden="true" />
                 <strong>{status.enabled ? 'Ativada' : 'Desativada'}</strong>
-                {status.required && <span className="security-tag">obrigatória para o super_admin</span>}
+                {status.required && <span className="security-tag">obrigatória</span>}
               </div>
 
-              {!status.enabled && !setup && (
-                <button className="primary-button" type="button" disabled={busy} onClick={() => void beginSetup()}>Ativar 2FA</button>
-              )}
-
-              {!status.enabled && setup && (
-                <>
-                  {setup.qr && <img className="security-qr" src={setup.qr} alt="QR Code para configurar o autenticador" width={208} height={208} />}
-                  <div className="security-secret">
-                    <span>Chave de configuração</span>
-                    <code>{setup.secret}</code>
-                  </div>
-                  <p className="security-hint">Escaneie o QR Code no Google/Microsoft Authenticator ou adicione a chave acima. Depois informe o código gerado.</p>
-                  <label className="security-field">
-                    <span>Código de 6 dígitos</span>
-                    <input inputMode="numeric" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" />
-                  </label>
-                  <div className="security-actions">
-                    <button className="secondary-button" type="button" disabled={busy} onClick={() => { setSetup(null); setCode(''); setError(null) }}>Cancelar</button>
-                    <button className="primary-button" type="button" disabled={busy} onClick={() => void confirm()}>Confirmar e ativar</button>
-                  </div>
-                </>
+              {!status.enabled && (
+                <button className="primary-button security-primary" type="button" disabled={busy} onClick={() => void beginSetup()}>
+                  Ativar 2FA
+                </button>
               )}
 
               {status.enabled && !status.required && (
-                <>
+                <div className="security-disable">
                   <p className="security-hint">Para desativar, confirme com o código atual do seu autenticador.</p>
                   <label className="security-field">
                     <span>Código de 6 dígitos</span>
-                    <input inputMode="numeric" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" />
+                    <input
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={code}
+                      onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                    />
                   </label>
-                  <button className="secondary-button" type="button" disabled={busy} onClick={() => void disable()}>Desativar 2FA</button>
-                </>
+                  <button className="security-danger" type="button" disabled={busy} onClick={() => void disable()}>
+                    Desativar 2FA
+                  </button>
+                </div>
               )}
 
               {status.enabled && status.required && (
                 <p className="security-hint">O super_admin mantém a 2FA sempre ativa por segurança da plataforma.</p>
               )}
             </>
-          )}
+          ))}
         </div>
       )}
     </Modal>

@@ -10,6 +10,7 @@ import { GlobalSearch } from '../shared/GlobalSearch'
 import { NotificationCenter } from '../shared/NotificationCenter'
 import { SecurityModal } from '../features/security/SecurityModal'
 import { applyTheme, currentTheme, persistTheme, toggleTheme, type Theme } from '../shared/theme'
+import { Icon, type IconName } from '../shared/icons'
 
 type AppShellProps = {
   initialActiveId?: string
@@ -81,15 +82,43 @@ const groupOrder: NavigationItem['group'][] = [
   'plataforma',
 ]
 
-const groupIcons: Record<NavigationItem['group'], string> = {
-  atendimento: '◉',
-  relacionamento: '◎',
-  inteligencia: '✦',
-  canais: '◈',
-  automacao: '⛓',
-  operacao: '♧',
-  administracao: '☷',
-  plataforma: '⚙',
+const navigationIcons: Record<string, IconName> = {
+  conversas: 'overview',
+  inbox: 'inbox',
+  relatorios: 'reports',
+  wizard: 'wizard',
+  contatos: 'contacts',
+  campanhas: 'campaigns',
+  agentes: 'agents',
+  conhecimento: 'knowledge',
+  ias: 'providers',
+  aprendizado: 'learning',
+  skills: 'skills',
+  chatflows: 'chatflow',
+  canais: 'channels',
+  integracoes: 'integrations',
+  equipe: 'team',
+  agendamentos: 'schedules',
+  biblioteca: 'library',
+  empresas: 'tenants',
+  'primeiros-passos': 'onboarding',
+  planos: 'plans',
+  servidores: 'servers',
+  marca: 'branding',
+  configuracoes: 'settings',
+  logs: 'logs',
+  lgpd: 'lgpd',
+}
+
+const groupIconNames: Record<NavigationItem['group'], IconName> = {
+  atendimento: 'headset',
+  relacionamento: 'users',
+  inteligencia: 'sparkles',
+  canais: 'radio',
+  automacao: 'zap',
+  operacao: 'activity',
+  administracao: 'sliders',
+  plataforma: 'layout',
 }
 
 const createExpandedGroups = (activeId: string): Record<NavigationItem['group'], boolean> => {
@@ -264,7 +293,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
             onClick={toggleSidebar}
           >
-            <span className="sidebar-toggle-glyph" aria-hidden="true">«</span>
+            <Icon name="chevron-left" className="sidebar-toggle-glyph" />
           </button>
           <button
             className="sidebar-close"
@@ -272,7 +301,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
             aria-label="Fechar menu"
             onClick={() => setMobileMenuOpen(false)}
           >
-            ×
+            <Icon name="close" />
           </button>
         </div>
 
@@ -294,7 +323,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
                   selectNavigation(item.id)
                 }}
               >
-                <span className="navigation-icon" aria-hidden="true">{item.icon}</span>
+                <span className="navigation-icon" aria-hidden="true"><Icon name={navigationIcons[item.id] ?? 'dot'} /></span>
                 {item.id === 'inbox' && unreadCount > 0 && (
                   <span className="rail-badge" aria-hidden="true">{unreadCount > 99 ? '99+' : unreadCount}</span>
                 )}
@@ -314,9 +343,9 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
                     aria-controls={`navigation-group-${group}`}
                     onClick={() => toggleGroup(group)}
                   >
-                    <span className="navigation-label-icon" aria-hidden="true">{groupIcons[group]}</span>
+                    <span className="navigation-label-icon" aria-hidden="true"><Icon name={groupIconNames[group]} /></span>
                     <span>{navigationGroups[group]}</span>
-                    <span className="navigation-label-chevron" aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
+                    <span className="navigation-label-chevron" aria-hidden="true"><Icon name={expanded ? 'chevron-up' : 'chevron-down'} /></span>
                   </button>
                   {expanded && (
                     <div className="navigation-items" id={`navigation-group-${group}`}>
@@ -334,7 +363,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
                             selectNavigation(item.id)
                           }}
                         >
-                          <span className="navigation-icon" aria-hidden="true">{item.icon}</span>
+                          <span className="navigation-icon" aria-hidden="true"><Icon name={navigationIcons[item.id] ?? 'dot'} /></span>
                           <span>{item.label}</span>
                           {item.id === 'inbox' && unreadCount > 0 && (
                             <span
@@ -402,7 +431,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
           <div className="header-actions">
             {canSearch && (
               <button className="header-search" type="button" aria-label="Abrir busca global" onClick={() => onSearchOpen?.()}>
-                <span className="header-search-icon" aria-hidden="true">⌕</span>
+                <span className="header-search-icon" aria-hidden="true"><Icon name="search" /></span>
                 <span className="header-search-label">Buscar</span>
                 <kbd>{shortcutLabel}</kbd>
               </button>
@@ -415,7 +444,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
               title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
               onClick={switchTheme}
             >
-              <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+              <span aria-hidden="true"><Icon name={theme === 'dark' ? 'sun' : 'moon'} /></span>
             </button>
             <NotificationCenter
               waitingCount={unreadCount}
@@ -437,7 +466,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
                   <strong>{displayName}</strong>
                   <span>{displayRole}</span>
                 </span>
-                <span className="header-profile-chevron" aria-hidden="true">⌄</span>
+                <span className="header-profile-chevron" aria-hidden="true"><Icon name="chevron-down" /></span>
               </button>
               {profileOpen && (
                 <div className="profile-menu" role="menu">
@@ -446,9 +475,11 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
                     <span className="profile-menu-role">{displayRole}</span>
                   </div>
                   <button className="profile-menu-item" type="button" role="menuitem" onClick={() => { setProfileOpen(false); setSecurityOpen(true) }}>
+                    <Icon name="shield" />
                     Segurança (2FA)
                   </button>
                   <LogoutButton className="profile-menu-item profile-menu-logout" onLoggedOut={() => window.location.assign('/auth?view=login')}>
+                    <Icon name="logout" />
                     Sair
                   </LogoutButton>
                 </div>

@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react'
+import { Icon } from '../../shared/icons'
 import './Auth.css'
 
 type PasswordChangePageProps = {
@@ -61,13 +62,7 @@ export function PasswordChangePage({ brandName = 'Notreve Chat Community', logoU
 
   return (
     <main className="auth-page">
-      <section className="auth-art" aria-label={brandName}>
-        <div className="auth-orbit auth-orbit-one" />
-        <div className="auth-orbit auth-orbit-two" />
-        <div className="auth-art-core"><span>✦</span><strong>IA</strong></div>
-        <p>Primeiro acesso protegido.</p>
-      </section>
-      <section className="auth-panel">
+      <section className="auth-card">
         <div className="auth-brand">
           {logoURL ? <img src={logoURL} alt="" /> : <span className="auth-brand-mark">◆</span>}
           <strong>{brandName}</strong>
@@ -87,7 +82,7 @@ export function PasswordChangePage({ brandName = 'Notreve Chat Community', logoU
           {error && <p className="auth-error" role="alert">{error}</p>}
           <button className="auth-submit" type="submit" disabled={loading}>
             {loading ? 'Salvando…' : 'Salvar nova senha'}
-            <span aria-hidden="true">→</span>
+            <Icon name="arrow-right" />
           </button>
         </form>
         <p className="auth-footnote">Após a troca, entre novamente com a nova senha.</p>

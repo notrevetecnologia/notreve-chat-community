@@ -1,4 +1,5 @@
 import { useEffect, type JSX, type ReactNode } from 'react'
+import { Icon } from './icons'
 import './Modal.css'
 
 export type ModalProps = {
@@ -56,7 +57,7 @@ export function Modal({
         <header className="nv-modal-header">
           {title ? <h2 className="nv-modal-title">{title}</h2> : <span aria-hidden="true" />}
           <button className="nv-modal-close" type="button" onClick={onClose} aria-label="Fechar">
-            ×
+            <Icon name="close" />
           </button>
         </header>
         <div className="nv-modal-body">{children}</div>
