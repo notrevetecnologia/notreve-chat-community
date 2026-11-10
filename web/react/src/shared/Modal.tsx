@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, type JSX, type ReactNode } from 'react'
 import './Modal.css'
 
 export type ModalProps = {
