@@ -56,7 +56,7 @@ EOF
 }
 
 prompt() {
-	if [ "$ASSUME_YES" -eq 1 ] || [ ! -r /dev/tty ]; then
+	if [ "$ASSUME_YES" -eq 1 ] || [ ! -r /dev/tty ] || [ ! -t 0 ]; then
 		return 0
 	fi
 	printf '%s' "$1" > /dev/tty
