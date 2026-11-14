@@ -19,6 +19,16 @@
 #
 set -eu
 
+if [ ! -f "$0" ]; then
+	INSTALL_TMP=$(mktemp)
+	cat > "$INSTALL_TMP"
+	export NCC_INSTALL_TMP="$INSTALL_TMP"
+	exec sh "$INSTALL_TMP" "$@"
+fi
+if [ -n "${NCC_INSTALL_TMP:-}" ]; then
+	trap 'rm -f "$NCC_INSTALL_TMP"' EXIT
+fi
+
 APP_NAME="Notreve Chat Community"
 REPO="notrevetecnologia/notreve-chat-community"
 GITHUB="https://github.com/${REPO}"
@@ -119,14 +129,6 @@ SCRIPT_DIR=""
 if [ -f "$0" ]; then
 	SELF_IS_FILE=1
 	SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-fi
-
-if [ "$SELF_IS_FILE" -eq 0 ]; then
-	if [ -r /dev/tty ] && [ -t 1 ]; then
-		exec </dev/tty
-	else
-		exec </dev/null
-	fi
 fi
 
 if [ -n "$DIR_ARG" ]; then
