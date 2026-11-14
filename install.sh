@@ -302,6 +302,9 @@ while :; do
 	if [ "$STATUS" = "healthy" ]; then
 		break
 	fi
+	if [ -n "$APP_ID" ] && docker compose exec -T app wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1; then
+		break
+	fi
 	i=$((i + 1))
 	if [ "$i" -ge "$HEALTH_RETRIES" ]; then
 		warn "timeout aguardando o health"
