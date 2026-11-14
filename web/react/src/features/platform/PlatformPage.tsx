@@ -17,7 +17,7 @@ type Limits = {
   max_webhooks: number
   creditos_ia_mensais: number
 }
-type Tenant = { id: number; name: string; slug: string; plan: string; status: string; timezone: string; dominio: string; creditos: number; limits?: Partial<Limits>; modules?: string[] }
+type Tenant = { id: number; name: string; slug: string; plan: string; status: string; timezone: string; locale: string; dominio: string; creditos: number; limits?: Partial<Limits>; modules?: string[] }
 type ContextSwitchAudit = { id: number; actor_id: number; actor_name: string; from_tenant_id: number; from_slug: string; to_tenant_id: number; to_slug: string; reason: string; created_at: string }
 type WhatsAppServer = { id: number; name: string; base_url: string; capacity: number; status: string; usage?: number; connections?: number; active_connections?: number }
 type TenantDraft = Omit<Tenant, 'id'> & { limits: Limits; modules: string[]; admin_name: string; admin_username: string; admin_password: string }
@@ -48,7 +48,7 @@ const defaultLimits: Limits = {
   max_webhooks: 0,
   creditos_ia_mensais: 0,
 }
-const newTenant = (): TenantDraft => ({ name: '', slug: '', plan: 'Essencial', status: 'active', timezone: 'America/Sao_Paulo', dominio: '', creditos: 0, limits: { ...defaultLimits }, modules: [...fixedModules], admin_name: '', admin_username: '', admin_password: '' })
+const newTenant = (): TenantDraft => ({ name: '', slug: '', plan: 'Essencial', status: 'active', timezone: 'America/Sao_Paulo', locale: 'pt-BR', dominio: '', creditos: 0, limits: { ...defaultLimits }, modules: [...fixedModules], admin_name: '', admin_username: '', admin_password: '' })
 const newServer = (): ServerDraft => ({ name: '', base_url: '', capacity: 100, status: 'active', token: '' })
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
@@ -121,8 +121,17 @@ export function PlatformPage({ initialTab = 'tenants', onBack }: { initialTab?: 
     }
     setSaving(true)
     try {
-      const payload: Record<string, unknown> = { ...tenant, name, slug, modules: Array.from(new Set([...fixedModules, ...tenant.modules])) }
-      delete payload.admin_name; delete payload.admin_username; delete payload.admin_password; delete payload.limits
+      const payload: Record<string, unknown> = {
+        name,
+        slug,
+        plan: tenant.plan.trim(),
+        status: tenant.status,
+        timezone: tenant.timezone,
+        locale: tenant.locale,
+        dominio: tenant.dominio.trim(),
+        creditos: Math.max(0, Number(tenant.creditos) || 0),
+        modules: Array.from(new Set([...fixedModules, ...tenant.modules])),
+      }
       if (!tenantID) payload.admin = { name: tenant.admin_name.trim(), username: tenant.admin_username.trim(), temporary_password: tenant.admin_password }
       await request(tenantID ? `/api/react/platform/tenants/${tenantID}` : '/api/react/platform/tenants', { method: tenantID ? 'PATCH' : 'POST', body: JSON.stringify(payload) })
       setNotice(tenantID ? 'Empresa atualizada.' : 'Empresa e primeiro administrador criados. Entregue a senha temporária por um canal seguro.')
@@ -177,7 +186,7 @@ function TenantPanel({ tenants, draft, editing, saving, select, change, toggleMo
           <Field label="Nome da empresa"><input value={draft.name} placeholder="Ex.: Acme Serviços" onChange={(event) => change('name', event.target.value)} /></Field>
           <Field label="Slug do workspace"><input value={draft.slug} placeholder="acme-servicos" onChange={(event) => change('slug', event.target.value.replace(/[^a-z0-9-]/gi, '-').toLowerCase())} /><small>Usado em domínio, URL e integrações.</small></Field>
           <Field label="Plano"><input value={draft.plan} placeholder="Essencial" onChange={(event) => change('plan', event.target.value)} /></Field>
-          <Field label="Domínio"><input value={draft.dominio} placeholder="acme.com.br" onChange={(event) => change('dominio', event.target.value)} /><small>Host principal usado para resolver o workspace.</small></Field>
+          <Field label="Domínio próprio (opcional)"><input value={draft.dominio} placeholder="acme.com.br" onChange={(event) => change('dominio', event.target.value)} /><small>Vazio: usa o domínio da instalação. Preencha somente se a empresa tiver um domínio próprio.</small></Field>
           <Select label="Status" value={draft.status} change={(value) => change('status', value)} options={[['active', 'Ativa'], ['trial', 'Em teste'], ['suspended', 'Suspensa'], ['closed', 'Encerrada']]} />
           <Select label="Fuso horário" value={draft.timezone} change={(value) => change('timezone', value)} options={[['America/Sao_Paulo', 'Brasília (UTC−3)'], ['America/Fortaleza', 'Fortaleza (UTC−3)'], ['America/Manaus', 'Manaus (UTC−4)'], ['UTC', 'UTC']]} />
         </div>

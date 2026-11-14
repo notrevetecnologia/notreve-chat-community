@@ -38,6 +38,13 @@ func (s *Server) HandleLoginPost(w http.ResponseWriter, r *http.Request) {
 	tenantCtx := store.WithTenantID(r.Context(), tenantID)
 
 	u, err := s.st.GetUsuarioByUsername(tenantCtx, username)
+	if err != nil && tenantID == store.SystemTenantID {
+		u, err = s.st.GetUsuarioByUsernameGlobal(r.Context(), username)
+		if err == nil {
+			tenantID = u.TenantID
+			tenantCtx = store.WithTenantID(r.Context(), tenantID)
+		}
+	}
 	if err != nil || !u.Active || bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
 		s.recordLoginFailure(r.Context(), ip, username)
 		s.renderLogin(w, r, "Usuário ou senha incorretos")

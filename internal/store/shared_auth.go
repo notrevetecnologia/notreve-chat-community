@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 )
 
@@ -24,6 +26,20 @@ func (s *Store) GetUserByIDGlobal(ctx context.Context, userID int) (Usuario, err
 		 JOIN tenants t ON t.id=u.tenant_id
 		 WHERE u.id=$1 AND (t.status IN ('active','trial') OR u.role='super_admin')
 		 LIMIT 1`, userID))
+}
+
+func (s *Store) GetUsuarioByUsernameGlobal(ctx context.Context, username string) (Usuario, error) {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return Usuario{}, errors.New("username vazio")
+	}
+	ctx = WithGlobalDataAccess(ctx)
+	return scanUsuario(s.pool.QueryRow(ctx,
+		`SELECT u.id, u.tenant_id, u.name, u.username, u.password_hash, u.role, u.permissions, u.atendente_id, u.active, u.created_at
+		 FROM usuarios u
+		 JOIN tenants t ON t.id=u.tenant_id
+		 WHERE lower(u.username)=lower($1) AND (t.status IN ('active','trial') OR u.role='super_admin')
+		 LIMIT 1`, username))
 }
 
 func (s *Store) GetSessionUserStateByID(ctx context.Context, userID int) (SessionUserState, error) {
