@@ -121,6 +121,14 @@ if [ -f "$0" ]; then
 	SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 fi
 
+if [ "$SELF_IS_FILE" -eq 0 ]; then
+	if exec </dev/tty 2>/dev/null; then
+		:
+	else
+		exec </dev/null
+	fi
+fi
+
 if [ -n "$DIR_ARG" ]; then
 	DIR="$DIR_ARG"
 elif [ "$SELF_IS_FILE" -eq 1 ] && [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
