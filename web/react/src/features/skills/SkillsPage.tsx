@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Skills.css'
+import { Icon } from '../../shared/icons'
 
 type Skill = {
   id: number
@@ -135,14 +136,14 @@ export default function SkillsPage({ onBack, permissions = null, onOpenAgent }: 
         <p>Pacotes de instruções especializadas que a IA carrega sob demanda. O agente vê apenas o nome e a descrição; a instrução completa é carregada quando ele invoca a skill.</p>
       </div>
       <div className="skills-intro-actions">
-        {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
+        {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
         {canManage && <><button className="secondary-button" type="button" onClick={() => void restoreDefaults()}>Restaurar padrão</button>
         <button className="primary-button" type="button" onClick={openCreate}>+ Nova skill</button></>}
       </div>
     </section>
 
-    {error && <div className="skills-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-    {notice && <div className="skills-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="skills-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+    {notice && <div className="skills-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
     <FilterBar resultLabel={`${total} skill${total === 1 ? '' : 's'}`} onReset={() => { setQuery(''); setCategory(''); setStatus('') }}>
       <FilterSearch value={query} onChange={setQuery} placeholder="Buscar skill ou instrução" />
@@ -177,7 +178,7 @@ export default function SkillsPage({ onBack, permissions = null, onOpenAgent }: 
 
     {draft && <div className="skills-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor() }}>
       <section className="skills-modal" role="dialog" aria-modal="true" aria-labelledby="skill-editor-title">
-        <header><div><span className="eyebrow">{editingID === null ? 'Nova skill' : 'Editar skill'}</span><h2 id="skill-editor-title">{editingID === null ? 'Criar skill' : 'Ajustar skill'}</h2></div><button type="button" className="skills-modal-close" onClick={closeEditor} aria-label="Fechar">×</button></header>
+        <header><div><span className="eyebrow">{editingID === null ? 'Nova skill' : 'Editar skill'}</span><h2 id="skill-editor-title">{editingID === null ? 'Criar skill' : 'Ajustar skill'}</h2></div><button type="button" className="skills-modal-close" onClick={closeEditor} aria-label="Fechar"><Icon name="close" /></button></header>
         <div className="skills-form">
           <label><span>Nome *</span><input autoFocus value={draft.nome} onChange={(event) => update('nome', event.target.value)} placeholder="Ex.: vendas-abertura" /></label>
           <label><span>Categoria</span><input value={draft.categoria} onChange={(event) => update('categoria', event.target.value)} placeholder="comercial" /></label>

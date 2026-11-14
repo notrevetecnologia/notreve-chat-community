@@ -6,6 +6,7 @@ import { chatflowStepLabels, chatflowStepDescriptions, type Chatflow, type Chatf
 import { applyConnectionRef, buildGraphFromSteps, buildStepsFromGraph, chatflowTodos, defaultConfigFor, handleLabel, nextOrdFor, type ChatflowNode, type ChatflowNodeData } from './canvas'
 import { ChatflowNodeComponent } from './ChatflowNode'
 import './Chatflow.css'
+import { Icon } from '../../shared/icons'
 
 type ChatflowPageProps = {
   onBack?: () => void
@@ -370,8 +371,8 @@ function ChatflowEditor({ onBack, onOpenChannels, initialFlowId }: ChatflowPageP
 
   return (
     <div className={`cf-full${selectedNode ? ' cf-full--inspector' : ''}`}>
-      {error && <div className="cf-toast cf-toast--error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-      {notice && <div className="cf-toast cf-toast--ok" role="status"><span>✓</span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+      {error && <div className="cf-toast cf-toast--error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+      {notice && <div className="cf-toast cf-toast--ok" role="status"><span><Icon name="check" /></span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
       <div className="cf-stage">
         {nodes.length === 0 && (
@@ -427,12 +428,12 @@ function ChatflowEditor({ onBack, onOpenChannels, initialFlowId }: ChatflowPageP
         {meta && <button className="cf-bar-btn cf-bar-primary" type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Salvando…' : 'Salvar'}</button>}
         {selectedID && <button className="cf-bar-btn" type="button" onClick={() => setAgentsOpen(true)}>Agentes</button>}
         {selectedID && activeFlow && <button className="cf-bar-btn cf-bar-danger" type="button" disabled={actionID === selectedID} onClick={() => void remove(activeFlow)}>Excluir</button>}
-        <button className="cf-bar-btn" type="button" disabled={loading} onClick={() => void load()} title="Atualizar">↻</button>
+        <button className="cf-bar-btn" type="button" disabled={loading} onClick={() => void load()} title="Atualizar"><Icon name="refresh" /></button>
       </div>
 
       <div className={`cf-palette${paletteOpen ? '' : ' is-closed'}`}>
         <button className="cf-palette-toggle" type="button" onClick={() => setPaletteOpen((value) => !value)}>
-          {paletteOpen ? '⌄ Blocos' : '⌃ Blocos'}
+          {paletteOpen ? <><Icon name="chevron-down" /> Blocos</> : <><Icon name="chevron-up" /> Blocos</>}
         </button>
         {paletteOpen && (
           <div className="cf-palette-items">
@@ -484,7 +485,7 @@ function ChatflowEditor({ onBack, onOpenChannels, initialFlowId }: ChatflowPageP
           <div className="cf-overlay-panel" onClick={(event) => event.stopPropagation()}>
             <header>
               <div><span className="eyebrow">Vínculo por canal</span><strong>Onde este fluxo rodará</strong></div>
-              <button type="button" onClick={() => setAgentsOpen(false)} aria-label="Fechar">×</button>
+              <button type="button" onClick={() => setAgentsOpen(false)} aria-label="Fechar"><Icon name="close" /></button>
             </header>
             <p className="cf-overlay-hint">O fluxo só substitui o atendimento livre quando estiver ativo e vinculado a um canal.</p>
             <p className="cf-overlay-hint">
@@ -582,7 +583,7 @@ function NodeConfigPanel({ node, onPatch, onAddBranch, onRemoveBranch, onAddOpti
         <span className="cf-inspector-type">{chatflowStepLabels[tipo] ?? tipo} <small>#{node.data.ord}</small></span>
         <div className="cf-inspector-header-actions">
           {tipo !== 'start' && <button type="button" className="cf-inspector-remove" onClick={onRemove}>Remover</button>}
-          <button type="button" className="cf-icon-btn" onClick={onClose} aria-label="Fechar painel">×</button>
+          <button type="button" className="cf-icon-btn" onClick={onClose} aria-label="Fechar painel"><Icon name="close" /></button>
         </div>
       </header>
       <div className="cf-inspector-body">
@@ -619,7 +620,7 @@ function NodeConfigPanel({ node, onPatch, onAddBranch, onRemoveBranch, onAddOpti
                     }}
                     placeholder="Ex.: Financeiro"
                   />
-                  <button type="button" onClick={() => onRemoveBranch(index)} aria-label="Remover ramo">×</button>
+                  <button type="button" onClick={() => onRemoveBranch(index)} aria-label="Remover ramo"><Icon name="close" /></button>
                 </div>
               ))}
               <button className="secondary-button" type="button" onClick={onAddBranch}>+ Ramo</button>
@@ -671,7 +672,7 @@ function NodeConfigPanel({ node, onPatch, onAddBranch, onRemoveBranch, onAddOpti
                     }}
                     placeholder="Valor aceito (opcional)"
                   />
-                  <button type="button" onClick={() => onRemoveOption(index)} aria-label="Remover opção">×</button>
+                  <button type="button" onClick={() => onRemoveOption(index)} aria-label="Remover opção"><Icon name="close" /></button>
                 </div>
               ))}
               <button className="secondary-button" type="button" onClick={onAddOption}>+ Opção</button>
@@ -807,7 +808,7 @@ function OptionsEditor({ value, onChange, placeholder }: { value: string[]; onCh
             next[index] = event.target.value
             onChange(next)
           }} placeholder={placeholder ?? `Opção ${index + 1}`} />
-          <button type="button" onClick={() => remove(index)} aria-label="Remover opção">×</button>
+          <button type="button" onClick={() => remove(index)} aria-label="Remover opção"><Icon name="close" /></button>
         </div>
       ))}
       <button className="secondary-button" type="button" onClick={() => onChange([...value, ''])}>+ Adicionar</button>
@@ -826,7 +827,7 @@ function RowsEditor({ value, onChange }: { value: Array<{ title?: string; desc?:
       <span className="cf-label">Itens da lista</span>
       {value.map((row, index) => (
         <div className="cf-row-card" key={index}>
-          <button type="button" className="cf-row-remove" onClick={() => onChange(value.filter((_, i) => i !== index))} aria-label="Remover item">×</button>
+          <button type="button" className="cf-row-remove" onClick={() => onChange(value.filter((_, i) => i !== index))} aria-label="Remover item"><Icon name="close" /></button>
           <input value={row.title ?? ''} onChange={(event) => setRow(index, 'title', event.target.value)} placeholder="Título" />
           <input value={row.desc ?? ''} onChange={(event) => setRow(index, 'desc', event.target.value)} placeholder="Descrição (opcional)" />
         </div>
@@ -850,7 +851,7 @@ function InputsEditor({ value, onChange }: { value: Record<string, string>; onCh
         <div className="cf-list-row" key={index}>
           <input value={key} onChange={(event) => setRow(index, event.target.value, fieldValue)} placeholder="chave" />
           <input value={fieldValue} onChange={(event) => setRow(index, key, event.target.value)} placeholder="valor" />
-          <button type="button" onClick={() => onChange(Object.fromEntries(entries.filter((_, i) => i !== index)))} aria-label="Remover entrada">×</button>
+          <button type="button" onClick={() => onChange(Object.fromEntries(entries.filter((_, i) => i !== index)))} aria-label="Remover entrada"><Icon name="close" /></button>
         </div>
       ))}
       <button className="secondary-button" type="button" onClick={() => onChange({ ...value, '': '' })}>+ Entrada</button>

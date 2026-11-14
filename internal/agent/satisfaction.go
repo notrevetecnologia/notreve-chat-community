@@ -32,7 +32,7 @@ func ParseSatisfactionRating(input string) (int, bool) {
 	starsOnly := true
 	for _, r := range text {
 		switch {
-		case r == '★' || r == '⭐':
+		case r == '\u2605' || r == '\u2b50':
 			stars++
 		case unicode.IsSpace(r) || unicode.IsPunct(r) || r == '\ufe0f':
 		default:

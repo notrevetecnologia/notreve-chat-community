@@ -79,7 +79,7 @@ func TestNormalizeWidgetConfigPreservesValidCustomization(t *testing.T) {
 		CorFundo:      "#fefefe",
 		CorTexto:      "#eeeeee",
 		CorTextoBotao: "#000000",
-		IconeBotao:    "🛟",
+		IconeBotao:    "A",
 		TextoInput:    "Fale com a equipe",
 		TextoRodape:   "Notreve",
 		Largura:       420,

@@ -1581,3 +1581,21 @@ h1, h2, h3, h4 {
 [data-theme="dark"] .segment-count,
 [data-theme="dark"] .delivery-status--enviada { color: var(--teal-dark); }
 [data-theme="dark"] .delivery-status--falha { color: var(--danger); }
+
+.agents-empty-icon svg, .agent-avatar svg, .providers-empty-icon svg, .provider-avatar svg,
+.campaigns-empty-icon svg, .segment-avatar svg, .channels-empty-icon svg, .channel-icon svg,
+.contacts-empty-icon svg, .team-stat-icon svg, .team-empty-icon svg,
+.learning-summary-icon svg, .knowledge-source-icon svg, .reports-kpi-icon svg,
+.platform-usage-icon svg, .server-icon svg, .integrations-empty-icon svg,
+.integrations-tip-icon svg, .integration-avatar svg, .workspace-empty > span svg,
+.inbox-search-icon svg, .inbox-state-icon svg, .inbox-media-document-icon svg,
+.inbox-upload-file-icon svg, .inbox-notify-icon svg, .inbox-context-empty-icon svg,
+.gs-item-icon svg, .gs-empty svg, .notifications-item-icon svg, .notifications-empty svg, .setup-step-number svg,
+.wizard-step-dot svg, .auth-brand-mark svg, .entity-back svg {
+  width: 1em;
+  height: 1em;
+}
+
+.inbox-ai-summary-icon svg, .inbox-insight-icon svg { width: 1em; height: 1em; }
+.entity-alert button svg, .entity-notice button svg { width: 1em; height: 1em; }
+[class$="-alert"] > span svg, [class$="-notice"] > span svg, [class$="-toast"] > span svg { width: 1em; height: 1em; }

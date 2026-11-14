@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Schedules.css'
+import { Icon } from '../../shared/icons'
 
 type ScheduleTipo = 'once' | 'interval' | 'cron'
 type ScheduleAcao = 'enviar_mensagem' | 'rodar_ferramenta' | 'callback_agente'
@@ -241,13 +242,13 @@ export default function SchedulesPage({ onBack, permissions = null }: { onBack?:
         <p>Tarefas que rodam sozinhas: enviar uma mensagem, executar uma ferramenta do sistema ou reativar a IA com um prompt (follow-up). Sobrevive a reinícios e pode ser disparada na hora.</p>
       </div>
       <div className="schedules-intro-actions">
-        {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
+        {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
         {canManage && <button className="primary-button" type="button" onClick={openCreate}>+ Novo agendamento</button>}
       </div>
     </section>
 
-    {error && <div className="schedules-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-    {notice && <div className="schedules-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="schedules-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+    {notice && <div className="schedules-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
     <FilterBar resultLabel={`${total} agendamento${total === 1 ? '' : 's'}`} onReset={() => { setQuery(''); setStatus(''); setTipo(''); setAcao('') }}>
       <FilterSearch value={query} onChange={setQuery} placeholder="Buscar por nome ou telefone" />
@@ -293,7 +294,7 @@ export default function SchedulesPage({ onBack, permissions = null }: { onBack?:
 
     {draft && <div className="schedules-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor() }}>
       <section className="schedules-modal" role="dialog" aria-modal="true" aria-labelledby="schedule-editor-title">
-        <header><div><span className="eyebrow">{editingID === null ? 'Novo agendamento' : 'Editar agendamento'}</span><h2 id="schedule-editor-title">{editingID === null ? 'Criar agendamento' : 'Ajustar agendamento'}</h2></div><button type="button" className="schedules-modal-close" onClick={closeEditor} aria-label="Fechar">×</button></header>
+        <header><div><span className="eyebrow">{editingID === null ? 'Novo agendamento' : 'Editar agendamento'}</span><h2 id="schedule-editor-title">{editingID === null ? 'Criar agendamento' : 'Ajustar agendamento'}</h2></div><button type="button" className="schedules-modal-close" onClick={closeEditor} aria-label="Fechar"><Icon name="close" /></button></header>
         <div className="schedules-form">
           <label className="schedules-form-wide"><span>Nome *</span><input autoFocus value={draft.nome} onChange={(event) => update('nome', event.target.value)} placeholder="Ex.: follow-up de proposta" /></label>
           <label className="schedules-form-wide"><span>Descrição</span><input value={draft.descricao} onChange={(event) => update('descricao', event.target.value)} placeholder="Para que serve este agendamento" /></label>

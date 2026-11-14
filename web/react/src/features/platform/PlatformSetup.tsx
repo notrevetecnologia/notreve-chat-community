@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import './Platform.css'
+import { Icon } from '../../shared/icons'
 
 type Envelope<T> = { data?: T; error?: { message?: string } }
 
@@ -98,13 +99,13 @@ export function PlatformSetup({ onDone }: { onDone: (surface?: string) => void }
       <div className="platform-setup-steps">
         {steps.map((item) => (
           <span key={item.id} className={item.id === step ? 'is-active' : item.id < step ? 'is-done' : ''}>
-            <b>{item.id < step ? '✓' : item.id + 1}</b> {item.label}
+            <b>{item.id < step ? <Icon name="check" /> : item.id + 1}</b> {item.label}
           </span>
         ))}
         <div className="platform-setup-progress"><span style={{ width: `${progress}%` }} /></div>
       </div>
 
-      {error && <div className="workspace-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
+      {error && <div className="workspace-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
       {step === 0 ? (
         <FormCard title="Notreve WhatsApp API" text="Informe a base URL e o token admin da API que você contratou com a Notreve. É o pool que atende todas as empresas.">
@@ -115,7 +116,7 @@ export function PlatformSetup({ onDone }: { onDone: (surface?: string) => void }
             <Field label="Capacidade de conexões"><input type="number" min="0" step="1" value={server.capacity} onChange={(event) => changeServer('capacity', Math.max(0, Number(event.target.value) || 0))} /></Field>
           </div>
           <div className="form-actions">
-            <button className="primary-button" type="button" disabled={busy} onClick={() => void submitServer()}>{busy ? 'Salvando…' : 'Salvar e continuar'} →</button>
+            <button className="primary-button" type="button" disabled={busy} onClick={() => void submitServer()}>{busy ? 'Salvando…' : 'Salvar e continuar'} <Icon name="arrow-right" /></button>
           </div>
         </FormCard>
       ) : (
@@ -132,8 +133,8 @@ export function PlatformSetup({ onDone }: { onDone: (surface?: string) => void }
             <Field label="Senha temporária *"><input type="password" autoComplete="new-password" value={company.admin_password} placeholder="mínimo 6 caracteres" onChange={(event) => changeCompany('admin_password', event.target.value)} /></Field>
           </div>
           <div className="form-actions">
-            <button className="secondary-button" type="button" disabled={busy} onClick={() => setStep(0)}>← Voltar</button>
-            <button className="primary-button" type="button" disabled={busy} onClick={() => void submitCompany()}>{busy ? 'Criando…' : 'Criar empresa e finalizar'} →</button>
+            <button className="secondary-button" type="button" disabled={busy} onClick={() => setStep(0)}><Icon name="arrow-left" /> Voltar</button>
+            <button className="primary-button" type="button" disabled={busy} onClick={() => void submitCompany()}>{busy ? 'Criando…' : 'Criar empresa e finalizar'} <Icon name="arrow-right" /></button>
           </div>
         </FormCard>
       )}

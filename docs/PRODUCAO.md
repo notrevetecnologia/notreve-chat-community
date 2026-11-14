@@ -30,7 +30,7 @@ Guia para subir o Notreve Chat Community em produção com segurança.
 2. Login como `super_admin` → Config → WhatsApp:
    - Base URL da API + token admin (servidores WhatsApp).
    - URL pública do painel (HTTPS).
-3. Canais → "🔗 Conectar" cada número (QR) → confere conectado.
+3. Canais → "Conectar" cada número (QR) → confere conectado.
 4. Config → IA padrão:
    - Provedor de chat (multimodal se quiser ver foto/PDF).
    - Transcrição de áudio (STT): Groq `https://api.groq.com/openai/v1` + `whisper-large-v3` ou OpenAI `whisper-1`.

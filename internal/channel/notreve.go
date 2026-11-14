@@ -640,37 +640,37 @@ func extractText(m *notreveMessage) string {
 	}
 	if m.ImageMessage != nil {
 		if c := strings.TrimSpace(m.ImageMessage.Caption); c != "" {
-			return "[📷 Cliente enviou uma imagem] Legenda: " + c
+			return "[Imagem enviada pelo cliente] Legenda: " + c
 		}
-		return "[📷 Cliente enviou uma imagem]"
+		return "[Imagem enviada pelo cliente]"
 	}
 	if m.VideoMessage != nil {
 		if c := strings.TrimSpace(m.VideoMessage.Caption); c != "" {
-			return "[🎬 Cliente enviou um vídeo] Legenda: " + c
+			return "[Vídeo enviado pelo cliente] Legenda: " + c
 		}
-		return "[🎬 Cliente enviou um vídeo]"
+		return "[Vídeo enviado pelo cliente]"
 	}
 	if m.AudioMessage != nil {
-		return "[🎵 Cliente enviou um áudio]"
+		return "[Áudio enviado pelo cliente]"
 	}
 	if m.DocumentMessage != nil {
-		return "[📄 Cliente enviou um documento: " + m.DocumentMessage.FileName + "]"
+		return "[Documento enviado pelo cliente: " + m.DocumentMessage.FileName + "]"
 	}
 	if m.StickerMessage != nil {
-		return "[😀 Cliente enviou um sticker]"
+		return "[Sticker enviado pelo cliente]"
 	}
 	if m.ContactMessage != nil {
 		name := contactNameFromVCard(m.ContactMessage.Vcard)
 		if name != "" {
-			return "[👤 Cliente enviou um contato: " + name + "]"
+			return "[Contato enviado pelo cliente: " + name + "]"
 		}
-		return "[👤 Cliente enviou um contato]"
+		return "[Contato enviado pelo cliente]"
 	}
 	if m.LocationMessage != nil {
-		return "[📍 Cliente enviou uma localização]"
+		return "[Localização enviada pelo cliente]"
 	}
 	if m.LiveLocationMessage != nil {
-		return "[🟢 Cliente enviou localização em tempo real]"
+		return "[Localização em tempo real enviada pelo cliente]"
 	}
 	if m.ButtonsResponseMessage != nil {
 		if t := strings.TrimSpace(m.ButtonsResponseMessage.SelectedDisplayText); t != "" {
@@ -1814,7 +1814,7 @@ func (n *Notreve) handleCall(ctx context.Context, raw []byte, baseURL, token str
 
 	text := n.chamadaMensagem(ctx)
 	if text == "" {
-		text = "Olá! Aqui atendemos apenas por mensagem no WhatsApp. Como posso te ajudar por aqui? 😊"
+		text = "Olá! Aqui atendemos apenas por mensagem no WhatsApp. Como posso te ajudar por aqui?"
 	}
 
 	if err := n.post(ctx, baseURL, token, "/chat/send/text", map[string]interface{}{"phone": phone, "body": whatsappSanitize(text)}); err != nil {
@@ -1829,9 +1829,9 @@ func (n *Notreve) handleCall(ctx context.Context, raw []byte, baseURL, token str
 		return
 	}
 	convID := conv.ID
-	status := "📞 Chamada de voz/vídeo recebida (resposta automática enviada)"
+	status := "Chamada de voz/vídeo recebida (resposta automática enviada)"
 	if rejected {
-		status = "📞 Chamada de voz/vídeo recebida (ligação rejeitada e resposta automática enviada)"
+		status = "Chamada de voz/vídeo recebida (ligação rejeitada e resposta automática enviada)"
 	}
 	if err := n.st.AddMessage(ctx, store.Message{ConversationID: convID, Role: "system", Content: status, Source: "system"}); err != nil {
 		Logger.Printf("erro ao registrar chamada (system) na conversa %d: %v", convID, err)

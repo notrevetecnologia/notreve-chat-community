@@ -118,9 +118,9 @@ export function ChannelEditorPage({
                 disabled={editing}
                 onChange={(event) => onChange('type', event.target.value as Channel['type'])}
               >
-                <option value="whatsapp">◉ WhatsApp</option>
-                <option value="webchat">◈ Webchat para site</option>
-                <option value="telegram">✈ Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="webchat">Webchat para site</option>
+                <option value="telegram">Telegram</option>
               </select>
             </Field>
             <Field label="Nome interno" help="Como este canal aparece para a equipe no painel.">
@@ -307,8 +307,8 @@ export function ChannelEditorPage({
             <Field label="Título do botão" help="Texto exibido quando a apresentação é barra.">
               <input value={draft.widget.titulo_botao} onChange={(event) => onWidgetChange('titulo_botao', event.target.value)} placeholder="Atendimento" />
             </Field>
-            <Field label="Ícone do botão" help="Emoji mostrado no botão do widget.">
-              <input value={draft.widget.icone_botao} maxLength={8} onChange={(event) => onWidgetChange('icone_botao', event.target.value)} placeholder="💬" />
+            <Field label="Ícone do botão" help="Ícone exibido no botão do widget. Vazio usa o ícone padrão.">
+              <input value={draft.widget.icone_botao} maxLength={8} onChange={(event) => onWidgetChange('icone_botao', event.target.value)} placeholder="Ícone (opcional)" />
             </Field>
             <ColorField label="Cor principal" help="Cor de destaque do cabeçalho e botões." value={draft.widget.cor_primaria} onChange={(value) => onWidgetChange('cor_primaria', value)} />
             <ColorField label="Cor do botão" help="Cor do botão flutuante quando fechado." value={draft.widget.cor_botao} onChange={(value) => onWidgetChange('cor_botao', value)} />

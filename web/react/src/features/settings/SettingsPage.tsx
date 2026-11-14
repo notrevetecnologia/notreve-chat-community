@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { loadSettings, saveSettings } from './settingsApi'
 import type { OperationalSettings } from './types'
 import './Settings.css'
+import { Icon } from '../../shared/icons'
 
 type SettingsPageProps = {
   onBack?: () => void
@@ -76,16 +77,16 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         <p>Defina como a IA, a fila e a distribuição trabalham juntas dentro deste workspace.</p>
       </div>
       <div className="settings-intro-actions">
-        {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
-        <button className="secondary-button" type="button" disabled={loading || saving} onClick={() => void load()}>↻ Atualizar</button>
+        {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
+        <button className="secondary-button" type="button" disabled={loading || saving} onClick={() => void load()}><Icon name="refresh" /> Atualizar</button>
       </div>
     </section>
 
-    {error && <div className="settings-alert" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-    {notice && <div className="settings-notice" role="status"><span>✓</span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="settings-alert" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+    {notice && <div className="settings-notice" role="status"><span><Icon name="check" /></span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
     {loading ? <div className="settings-state"><span className="settings-spinner" /> Carregando configurações…</div> : <section className="settings-panel">
-      <header className="settings-panel-header"><div><span className="eyebrow">Operação inteligente</span><h3>Regras do atendimento</h3><p>Essas preferências valem somente para a empresa atual.</p></div><button className="primary-button" type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Salvando…' : 'Salvar configurações'} <span>↗</span></button></header>
+      <header className="settings-panel-header"><div><span className="eyebrow">Operação inteligente</span><h3>Regras do atendimento</h3><p>Essas preferências valem somente para a empresa atual.</p></div><button className="primary-button" type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Salvando…' : 'Salvar configurações'} <Icon name="send" /></button></header>
       <div className="settings-grid">
         <ToggleCard title="Modo aberto" description="Permite que a equipe visualize a operação completa, respeitando suas permissões." checked={settings.modo_aberto} onChange={(value) => update('modo_aberto', value)} />
         <ToggleCard title="IA monitora a operação" description="Mantém a assistente acompanhando conversas e pronta para assumir quando configurada." checked={settings.ia_monitora} onChange={(value) => update('ia_monitora', value)} />
@@ -102,7 +103,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         <label className="settings-number-field"><span>Proporção padrão da imagem</span><div><select value={settings.image_aspect_ratio} onChange={(event) => update('image_aspect_ratio', event.target.value)}><option value="1:1">1:1 (quadrada)</option><option value="16:9">16:9 (paisagem)</option><option value="9:16">9:16 (retrato)</option><option value="4:3">4:3</option><option value="3:4">3:4</option></select></div><small>Usada quando o cliente não pede uma proporção específica.</small></label>
         <label className="settings-number-field"><span>Retenção dos logs</span><div><input type="number" min="1" max="3650" value={settings.logs_retencao_dias} onChange={(event) => update('logs_retencao_dias', Math.max(1, Math.min(3650, Number(event.target.value) || 30)))} /><strong>dias</strong></div><small>Logs mais antigos que isso são removidos automaticamente.</small></label>
       </div>
-      <div className="settings-helper"><span aria-hidden="true">✦</span><p><strong>Configure a inteligência nos lugares certos.</strong> Escolha a IA em <em>Provedores</em>, ensine o agente pela <em>Base de conhecimento</em> e conecte ações externas em <em>Integrações</em>. Os detalhes técnicos da plataforma ficam protegidos no control plane.</p></div>
+      <div className="settings-helper"><span aria-hidden="true"><Icon name="info" /></span><p><strong>Configure a inteligência nos lugares certos.</strong> Escolha a IA em <em>Provedores</em>, ensine o agente pela <em>Base de conhecimento</em> e conecte ações externas em <em>Integrações</em>. Os detalhes técnicos da plataforma ficam protegidos no control plane.</p></div>
     </section>}
   </div>
 }

@@ -363,7 +363,7 @@ func (r *cfRun) execute(step cfStep) error {
 		_ = json.Unmarshal(step.cfg, &cfg)
 		r.enqueueSetor(cfg)
 		if r.reply.Text == "" {
-			r.reply.Text = "Você foi direcionado para o setor de atendimento. Em breve um atendente vai te responder. 😊"
+			r.reply.Text = "Você foi direcionado para o setor de atendimento. Em breve um atendente vai te responder."
 		}
 		return nil
 	case cfStepStart:
@@ -378,7 +378,7 @@ func (r *cfRun) execute(step cfStep) error {
 		_ = json.Unmarshal(step.cfg, &cfg)
 		r.appendText(cfg.Text)
 		if r.reply.Text == "" {
-			r.reply.Text = "Obrigado pelo contato! Até logo. 😊"
+			r.reply.Text = "Obrigado pelo contato! Até logo."
 		}
 		if !r.satSent {
 			_ = r.e.store.EncerrarConversationSilencioso(r.ctx, r.convID, "Concluído pelo chat flow de atendimento", nil)
@@ -781,10 +781,10 @@ func cfBusinessHoursOpen(cfg cfBusinessHoursConfig, now time.Time) bool {
 
 func cfSatisfactionQuestion(ctx context.Context, st *store.Store, target string) string {
 	key := "satisfacao_ia"
-	text := "De 1 a 5, como você avalia o atendimento da nossa assistente virtual? Responda apenas com um número (1 = péssimo, 5 = excelente). 😊"
+	text := "De 1 a 5, como você avalia o atendimento da nossa assistente virtual? Responda apenas com um número (1 = péssimo, 5 = excelente)."
 	if target == "operador" {
 		key = "satisfacao_operador"
-		text = "De 1 a 5, como você avalia o atendimento do nosso atendente? Responda apenas com um número (1 = péssimo, 5 = excelente). 😊"
+		text = "De 1 a 5, como você avalia o atendimento do nosso atendente? Responda apenas com um número (1 = péssimo, 5 = excelente)."
 	}
 	if message, err := st.GetMensagemByChave(ctx, key); err == nil && strings.TrimSpace(message.Texto) != "" {
 		return strings.TrimSpace(message.Texto)

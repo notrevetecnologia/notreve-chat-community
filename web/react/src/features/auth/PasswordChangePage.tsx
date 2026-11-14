@@ -64,7 +64,7 @@ export function PasswordChangePage({ brandName = 'Notreve Chat Community', logoU
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-brand">
-          {logoURL ? <img src={logoURL} alt="" /> : <span className="auth-brand-mark">◆</span>}
+          {logoURL ? <img src={logoURL} alt="" /> : <span className="auth-brand-mark"><Icon name="diamond" /></span>}
           <strong>{brandName}</strong>
         </div>
         <div className="auth-heading">

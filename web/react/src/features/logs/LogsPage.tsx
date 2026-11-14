@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Logs.css'
+import { Icon } from '../../shared/icons'
 
 type LogEntry = {
   id: number
@@ -138,12 +139,12 @@ export default function LogsPage({ onBack }: { onBack?: () => void }) {
         <p>Eventos estruturados da operação: geração de mídia, integrações, canais e erros. Filtre por nível, módulo, período ou busque no conteúdo. A retenção é configurável em Configurações.</p>
       </div>
       <div className="logs-intro-actions">
-        {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
-        <button className="secondary-button" type="button" disabled={loading} onClick={() => { void load(); void loadStats() }}>↻ Atualizar</button>
+        {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
+        <button className="secondary-button" type="button" disabled={loading} onClick={() => { void load(); void loadStats() }}><Icon name="refresh" /> Atualizar</button>
       </div>
     </section>
 
-    {error && <div className="logs-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="logs-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
     <div className="logs-stats">
       <article><span>Total</span><strong>{stats ? stats.total : '—'}</strong><small>entradas retidas</small></article>
@@ -170,7 +171,7 @@ export default function LogsPage({ onBack }: { onBack?: () => void }) {
             <span className="log-module">{entry.module || '—'}</span>
             <span className="log-message">{entry.message}</span>
             <span className="log-ts">{formatDate(entry.ts)}</span>
-            <span className="log-chevron" aria-hidden="true">{expanded ? '▾' : '▸'}</span>
+            <span className="log-chevron" aria-hidden="true">{expanded ? <Icon name="chevron-down" /> : <Icon name="chevron-right" />}</span>
           </button>
           {expanded && <div className="log-entry-detail">
             {entry.request_id && <p className="log-request"><span>request_id</span><code>{entry.request_id}</code></p>}

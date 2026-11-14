@@ -3,6 +3,7 @@ import { createConsent, createPolitica, listAudit, listConsents, listPoliticas, 
 import type { AuditLog, LGPDConsent, LGPDPolitica, LGPDSummary } from './types'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor } from '../../shared/Pagination'
 import './Lgpd.css'
+import { Icon } from '../../shared/icons'
 
 type LgpdPageProps = {
   onBack?: () => void
@@ -90,13 +91,13 @@ export function LgpdPage({ onBack, permissions = null }: LgpdPageProps) {
           <p>Publique a política de privacidade, registre consentimentos e acompanhe os acessos aos dados.</p>
         </div>
         <div className="settings-intro-actions">
-          {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
-          <button className="secondary-button" type="button" disabled={loading} onClick={() => { setLoading(true); void Promise.all([loadBase(), loadConsents(), loadPoliticas(), loadAudit()]).finally(() => setLoading(false)) }}>↻ Atualizar</button>
+          {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
+          <button className="secondary-button" type="button" disabled={loading} onClick={() => { setLoading(true); void Promise.all([loadBase(), loadConsents(), loadPoliticas(), loadAudit()]).finally(() => setLoading(false)) }}><Icon name="refresh" /> Atualizar</button>
         </div>
       </section>
 
-      {error && <div className="settings-alert" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-      {notice && <div className="settings-notice" role="status"><span>✓</span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+      {error && <div className="settings-alert" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+      {notice && <div className="settings-notice" role="status"><span><Icon name="check" /></span><p>{notice}</p><button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
       {loading && !summary ? <div className="settings-state"><span className="settings-spinner" /> Carregando LGPD…</div> : <div className="lgpd-content">
         {summary && (
@@ -175,7 +176,7 @@ function ConsentsTab({ summary, items, scopeFilter, onScopeFilterChange, total, 
           <label><span>Base legal</span><input value={baseLegal} onChange={(event) => setBaseLegal(event.target.value)} /></label>
           <label><span>Canal</span><input value={canal} onChange={(event) => setCanal(event.target.value)} /></label>
           <label className="lgpd-check"><span>Registrar aceite</span><input type="checkbox" checked={aceito} onChange={(event) => setAceito(event.target.checked)} /></label>
-          <button className="primary-button" type="button" disabled={saving} onClick={() => void register()}>{saving ? 'Registrando…' : 'Registrar consentimento'} <span aria-hidden="true">↗</span></button>
+          <button className="primary-button" type="button" disabled={saving} onClick={() => void register()}>{saving ? 'Registrando…' : 'Registrar consentimento'} <Icon name="send" /></button>
         </div>
         {formError && <p className="lgpd-form-error">{formError}</p>}
       </section>}
@@ -185,7 +186,7 @@ function ConsentsTab({ summary, items, scopeFilter, onScopeFilterChange, total, 
         <FilterBar resultLabel={`${total} consentimento${total === 1 ? '' : 's'}`} onReset={() => onScopeFilterChange('')}>
           <FilterSearch value={scopeFilter} onChange={onScopeFilterChange} placeholder="Filtrar por escopo" />
         </FilterBar>
-        {items.length === 0 ? <div className="workspace-empty"><span>◎</span><strong>Nenhum consentimento registrado</strong><p>Os aceites aparecerão aqui conforme forem coletados.</p></div> : <table className="lgpd-table">
+        {items.length === 0 ? <div className="workspace-empty"><span><Icon name="shield" /></span><strong>Nenhum consentimento registrado</strong><p>Os aceites aparecerão aqui conforme forem coletados.</p></div> : <table className="lgpd-table">
           <thead><tr><th>Quando</th><th>Contato</th><th>Escopo</th><th>Base legal</th><th>Canal</th><th>Aceite</th></tr></thead>
           <tbody>{items.map((entry) => <tr key={entry.id}><td>{new Date(entry.data).toLocaleString('pt-BR')}</td><td>{entry.contato_id ?? '—'}</td><td>{entry.scope}</td><td>{entry.base_legal}</td><td>{entry.canal || '—'}</td><td>{entry.aceito ? 'Sim' : 'Não'}</td></tr>)}</tbody>
         </table>}
@@ -238,7 +239,7 @@ function PoliticaTab({ politica, historico, canManage, onPublished, setNotice }:
           <label><span>Tipo</span><select value={tipo} onChange={(event) => setTipo(event.target.value)}><option value="privacidade">Privacidade</option><option value="termos">Termos de uso</option></select></label>
           <label className="lgpd-wide"><span>Texto</span><textarea rows={5} value={texto} onChange={(event) => setTexto(event.target.value)} placeholder="Conteúdo integral da política…" /></label>
           <label className="lgpd-wide"><span>URL (opcional)</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://…" /></label>
-          <button className="primary-button" type="button" disabled={saving} onClick={() => void publish()}>{saving ? 'Publicando…' : 'Publicar nova versão'} <span aria-hidden="true">↗</span></button>
+          <button className="primary-button" type="button" disabled={saving} onClick={() => void publish()}>{saving ? 'Publicando…' : 'Publicar nova versão'} <Icon name="send" /></button>
         </div>
         {formError && <p className="lgpd-form-error">{formError}</p>}</>}
       </section>

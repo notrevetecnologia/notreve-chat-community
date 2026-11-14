@@ -180,7 +180,7 @@ func (t *Telegram) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if text == "" && msg.hasMedia() {
-		reply := "Por enquanto, só consigo entender mensagens escritas por aqui. 😊\nEnvie o texto da sua dúvida, por favor."
+		reply := "Por enquanto, só consigo entender mensagens escritas por aqui.\nEnvie o texto da sua dúvida, por favor."
 		if err := t.sendText(ctx, ch.Token, msg.Chat.ID, reply); err != nil {
 			Logger.Printf("telegram: erro respondendo pedido de texto: %v", err)
 		}

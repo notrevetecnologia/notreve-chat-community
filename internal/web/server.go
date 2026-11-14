@@ -252,7 +252,7 @@ func (s *Server) patienceJob(ctx context.Context) {
 			continue
 		}
 		_ = s.st.AddMessage(ctx, store.Message{
-			ConversationID: c.ID, Role: "assistant", Source: "system", Content: "🤖 " + msg,
+			ConversationID: c.ID, Role: "assistant", Source: "system", Content: "[Bot] " + msg,
 		})
 	}
 }
@@ -472,13 +472,13 @@ func (s *Server) loadTemplates() error {
 		"channelIcon": func(ch string) string {
 			switch ch {
 			case "whatsapp":
-				return "📱 WhatsApp"
+				return "WhatsApp"
 			case "webchat":
-				return "🌐 Web Chat"
+				return "Web Chat"
 			case "instagram":
-				return "📸 Instagram"
+				return "Instagram"
 			case "telegram":
-				return "✈️ Telegram"
+				return "Telegram"
 			}
 			return ch
 		},
@@ -1383,7 +1383,7 @@ func (s *Server) followupJob(ctx context.Context) {
 		if c.Channel != "whatsapp" || c.CustomerPhone == "" {
 			continue
 		}
-		text := "Olá, tudo bem? 😊 Passando pra ver se você ainda precisa de ajuda com o que conversamos. Se precisar, é só me chamar por aqui!"
+		text := "Olá, tudo bem? Passando pra ver se você ainda precisa de ajuda com o que conversamos. Se precisar, é só me chamar por aqui!"
 		if m, err := s.st.GetMensagemByChave(ctx, "followup"); err == nil && strings.TrimSpace(m.Texto) != "" {
 			text = strings.TrimSpace(m.Texto)
 		}
@@ -1416,7 +1416,7 @@ func (s *Server) watchdogJob(ctx context.Context) {
 	if err != nil || len(convs) == 0 {
 		return
 	}
-	text := "Desculpe, tive um problema técnico ao processar sua mensagem. Já registrei o ocorrido. Pode repetir sua última mensagem, por favor? 😊"
+	text := "Desculpe, tive um problema técnico ao processar sua mensagem. Já registrei o ocorrido. Pode repetir sua última mensagem, por favor?"
 	if m, merr := s.st.GetMensagemByChave(ctx, "watchdog_fallback"); merr == nil && strings.TrimSpace(m.Texto) != "" {
 		text = strings.TrimSpace(m.Texto)
 	}
@@ -2087,7 +2087,7 @@ func (s *Server) handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.st.AddMessage(ctx, store.Message{
-		ConversationID: id, Role: "assistant", Content: "📎 " + display, Source: "human",
+		ConversationID: id, Role: "assistant", Content: "[Arquivo] " + display, Source: "human",
 		MediaType: mediaType, MediaB64: base64.StdEncoding.EncodeToString(data), MediaMime: mime, MediaName: header.Filename,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2102,7 +2102,7 @@ func (s *Server) handleMedia(w http.ResponseWriter, r *http.Request) {
 	s.enqueueEvent(ctx, webhooks.EventMessageSent, "message.sent:"+strconv.Itoa(id)+":human:"+strconv.FormatInt(time.Now().UnixNano(), 10), map[string]interface{}{
 		"conversation": store.ConversationWebhookPayload(conv),
 		"message": store.MessageWebhookPayload(store.Message{
-			ConversationID: id, Role: "assistant", Source: "human", Content: "📎 " + display,
+			ConversationID: id, Role: "assistant", Source: "human", Content: "[Arquivo] " + display,
 			MediaType: mediaType, MediaName: header.Filename, CreatedAt: time.Now().UTC(),
 		}),
 	})
@@ -2214,10 +2214,10 @@ func (s *Server) handleAccept(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"conversa já foi aceita por outro atendente"}`, http.StatusConflict)
 		return
 	}
-	_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "👤 " + u.Name + " iniciou o atendimento"})
+	_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "[Sistema] " + u.Name + " iniciou o atendimento"})
 	// Avisa o cliente que um operador assumiu.
 	if conv.CustomerPhone != "" {
-		_ = s.sendConversationText(ctx, conv, "👋 "+u.Name+" entrou no seu atendimento!", "")
+		_ = s.sendConversationText(ctx, conv, u.Name+" entrou no seu atendimento!", "")
 	}
 	writeJSON(w, map[string]string{"ok": "true"})
 }
@@ -2401,7 +2401,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	if in.Status == "closed" {
 		_ = s.st.AddMessage(ctx, store.Message{
 			ConversationID: id, Role: "system", Source: "system",
-			Content: fmt.Sprintf("🔖 Protocolo de atendimento #T-%05d encerrado", id),
+			Content: fmt.Sprintf("Protocolo de atendimento #T-%05d encerrado", id),
 		})
 	}
 	if conv, err := s.st.GetConversation(ctx, id); err == nil {
@@ -2441,7 +2441,7 @@ func (s *Server) handleReturnToAI(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = s.st.AddMessage(ctx, store.Message{
 		ConversationID: id, Role: "system", Source: "system",
-		Content: "🔁 Atendimento devolvido para a IA",
+		Content: "Atendimento devolvido para a IA",
 	})
 	if updated, err := s.st.GetConversation(ctx, id); err == nil {
 		s.enqueueEvent(ctx, webhooks.EventAgentTransferred, "agent.transferred:"+strconv.Itoa(id)+":"+strconv.FormatInt(time.Now().UnixNano(), 10), map[string]interface{}{
@@ -2531,14 +2531,14 @@ func (s *Server) handleConversationSetor(w http.ResponseWriter, r *http.Request)
 
 	// Registra no chat e avisa o cliente de forma clara/direta.
 	if in.AtendenteID > 0 {
-		_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "🔁 Transferido para " + destino})
+		_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "Transferido para " + destino})
 		if conv.CustomerPhone != "" {
-			_ = s.sendConversationText(ctx, conv, "🔁 Seu atendimento será feito pelo(a) "+destino+". Um instante 😊", "")
+			_ = s.sendConversationText(ctx, conv, "Seu atendimento será feito pelo(a) "+destino+". Um instante.", "")
 		}
 	} else {
-		_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "🔁 Transferido para " + destino})
+		_ = s.st.AddMessage(ctx, store.Message{ConversationID: id, Role: "system", Source: "system", Content: "Transferido para " + destino})
 		if conv.CustomerPhone != "" {
-			_ = s.sendConversationText(ctx, conv, "🔁 Você foi transferido para o "+destino+". Um atendente vai te atender em instantes 😊", "")
+			_ = s.sendConversationText(ctx, conv, "Você foi transferido para o "+destino+". Um atendente vai te atender em instantes.", "")
 		}
 	}
 	writeJSON(w, map[string]string{"ok": "true"})

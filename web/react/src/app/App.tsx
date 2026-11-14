@@ -620,9 +620,9 @@ function OverviewPage({ brand, firstName, canOpenInbox = true, canSearch = true,
 
       {error && (
         <div className="workspace-alert" role="alert">
-          <span>!</span>
+          <span><Icon name="alert-circle" /></span>
           {error}
-          <button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button>
+          <button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button>
         </div>
       )}
 

@@ -7,6 +7,7 @@ import {
   type AgentResponse,
   type Options,
 } from "./agentShared";
+import { Icon } from '../../shared/icons'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor } from "../../shared/Pagination";
 import "./Agents.css";
 
@@ -116,7 +117,7 @@ export function AgentsPage({
         </div>
         <div className="agents-intro-actions">
           <button className="secondary-button" type="button" onClick={onBack}>
-            ← Visão geral
+            <Icon name="arrow-left" /> Visão geral
           </button>
           <button
             className="primary-button"
@@ -129,14 +130,14 @@ export function AgentsPage({
       </section>
       {error && (
         <div className="agents-alert" role="alert">
-          <span>!</span>
+          <span><Icon name="alert-circle" /></span>
           {error}
           <button
             type="button"
             onClick={() => setError(null)}
             aria-label="Fechar aviso"
           >
-            ×
+            <Icon name="close" />
           </button>
         </div>
       )}
@@ -153,7 +154,7 @@ export function AgentsPage({
         </div>
       ) : agents.length === 0 ? (
         <div className="agents-empty">
-          <div className="agents-empty-icon">✦</div>
+          <div className="agents-empty-icon"><Icon name="agents" /></div>
           <strong>Nenhum agente criado</strong>
           <p>
             Comece com um assistente para responder automaticamente nos seus
@@ -179,7 +180,7 @@ export function AgentsPage({
                 <div
                   className={`agent-avatar ${agent.active ? "is-active" : ""}`}
                 >
-                  ✦
+                  <Icon name="bot" />
                 </div>
                 <div>
                   <span className="agent-kicker">Assistente virtual</span>
@@ -196,12 +197,12 @@ export function AgentsPage({
                 {agent.system_prompt || "Sem instrução inicial definida."}
               </p>
               <div className="agent-metadata">
-                <span>◌ {agent.provider_name || "Provedor padrão"}</span>
+                <span><Icon name="providers" /> {agent.provider_name || "Provedor padrão"}</span>
                 <span>
-                  ◈ {agent.knowledge_chars.toLocaleString("pt-BR")} caracteres
+                  <Icon name="knowledge" /> {agent.knowledge_chars.toLocaleString("pt-BR")} caracteres
                 </span>
                 <span>
-                  ⌁ {agent.knowledge_links.length} fonte
+                  <Icon name="link" /> {agent.knowledge_links.length} fonte
                   {agent.knowledge_links.length === 1 ? "" : "s"}
                 </span>
               </div>
@@ -250,7 +251,7 @@ export function AgentsPage({
                     void refetch(agent);
                   }}
                 >
-                  ↻ Fontes
+                  <Icon name="refresh" /> Fontes
                 </button>
                 <button
                   className="is-danger"

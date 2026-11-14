@@ -5,6 +5,7 @@ import {
   type Draft,
   type Options,
 } from "./agentShared";
+import { Icon } from '../../shared/icons'
 
 type ChangeDraft = <K extends keyof Draft>(key: K, value: Draft[K]) => void;
 
@@ -111,7 +112,7 @@ export function AgentBehaviorTab({
         <div className="agent-field-wide entity-cross-links">
           <span>Precisa conectar ou trocar o modelo de IA?</span>
           <button type="button" onClick={onOpenProviders}>
-            Gerenciar provedores de IA →
+            Gerenciar provedores de IA <Icon name="arrow-right" />
           </button>
         </div>
       )}
@@ -240,7 +241,7 @@ export function AgentSkillsTab({ agentId, onOpenSkills }: { agentId: number | nu
         <div className="entity-cross-links">
           <span>Quer criar ou editar instruções reutilizáveis?</span>
           <button type="button" onClick={onOpenSkills}>
-            Gerenciar skills →
+            Gerenciar skills <Icon name="arrow-right" />
           </button>
         </div>
       )}
@@ -414,7 +415,7 @@ export function AgentKnowledgeTab({
             disabled={!agentId}
             onClick={() => { if (agentId) onOpenKnowledge(agentId); }}
           >
-            Gerenciar base de conhecimento deste agente →
+            Gerenciar base de conhecimento deste agente <Icon name="arrow-right" />
           </button>
         </div>
       )}
@@ -573,7 +574,7 @@ export function AgentChannelsTab({
             Precisa conectar um número ou escolher o agente de um canal?
           </span>
           <button type="button" onClick={onOpenChannels}>
-            Gerenciar canais →
+            Gerenciar canais <Icon name="arrow-right" />
           </button>
         </div>
       )}

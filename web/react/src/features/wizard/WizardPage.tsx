@@ -19,6 +19,7 @@ import {
   type ProviderModel,
   type ProviderType,
 } from './wizardApi'
+import { Icon, type IconName } from '../../shared/icons'
 import { LINKS } from '../../shared/links'
 import './Wizard.css'
 
@@ -69,10 +70,10 @@ function mergeProviderModels(models: ProviderModel[], current: string): Provider
   return merged
 }
 
-const channelOptions: { type: ChannelType; label: string; icon: string; description: string }[] = [
-  { type: 'whatsapp', label: 'WhatsApp', icon: '◉', description: 'Número via Notreve WhatsApp API.' },
-  { type: 'telegram', label: 'Telegram', icon: '✈', description: 'Bot criado no @BotFather.' },
-  { type: 'webchat', label: 'Webchat', icon: '◈', description: 'Widget para o seu site.' },
+const channelOptions: { type: ChannelType; label: string; icon: IconName; description: string }[] = [
+  { type: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', description: 'Número via Notreve WhatsApp API.' },
+  { type: 'telegram', label: 'Telegram', icon: 'telegram', description: 'Bot criado no @BotFather.' },
+  { type: 'webchat', label: 'Webchat', icon: 'globe', description: 'Widget para o seu site.' },
 ]
 
 function channelTypeLabel(type: ChannelType): string {
@@ -617,7 +618,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       <div className="wizard-channel-grid">
         {channelOptions.map((option) => (
           <button key={option.type} type="button" className={`wizard-channel${channelType === option.type ? ' is-selected' : ''}`} onClick={() => { setChannelType(option.type); setCreatedChannelId(null); resetChannelConnection() }}>
-            <span className="wizard-channel-icon">{option.icon}</span>
+            <span className="wizard-channel-icon"><Icon name={option.icon} /></span>
             <strong>{option.label}</strong>
             <small>{option.description}</small>
           </button>
@@ -636,7 +637,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       {channelType === 'whatsapp' && createdChannelId !== null && (
         <div className="wizard-qr">
           {channelConnected ? (
-            <div className="wizard-connect-ok"><span>✓</span> WhatsApp conectado. Você já pode continuar.</div>
+            <div className="wizard-connect-ok"><span><Icon name="check" /></span> WhatsApp conectado. Você já pode continuar.</div>
           ) : (
             <>
               {whatsappQr ? (
@@ -732,7 +733,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
           )}
         </div>
       )}
-      {testError && <div className="wizard-alert" role="alert"><span>!</span>{testError}<button type="button" onClick={() => setTestError(null)} aria-label="Fechar aviso">×</button></div>}
+      {testError && <div className="wizard-alert" role="alert"><span>!</span>{testError}<button type="button" onClick={() => setTestError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
       <label className="wizard-field">
         <span>Mensagem de teste</span>
         <textarea rows={4} value={testMessage} onChange={(event) => setTestMessage(event.target.value)} placeholder="Olá! Quanto custa o serviço de vocês?" />
@@ -766,7 +767,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         <ol className="wizard-stepper">
           {steps.map((item, index) => (
             <li key={item.id} className={index === step ? 'is-active' : index < step ? 'is-done' : ''}>
-              <span className="wizard-step-dot">{index < step ? '✓' : index + 1}</span>
+              <span className="wizard-step-dot">{index < step ? <Icon name="check" /> : index + 1}</span>
               <span className="wizard-step-text">
                 <strong>{item.label}</strong>
                 <small>{item.hint}</small>
@@ -777,8 +778,8 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         <div className="wizard-progress" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
           <span style={{ width: `${progress}%` }} />
         </div>
-        {error && <div className="wizard-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-        {notice && <div className="wizard-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+        {error && <div className="wizard-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+        {notice && <div className="wizard-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
         <div className="wizard-body">
           {step === 0 && renderCerebro()}
           {step === 1 && renderCanal()}
@@ -788,9 +789,9 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         <footer className="wizard-footer">
           {step > 0 && <button className="secondary-button" type="button" onClick={goBack} disabled={saving}>Voltar</button>}
           {step < 3 ? (
-            <button className="primary-button" type="button" onClick={() => void goNext()} disabled={nextDisabled}>{nextLabel} <span aria-hidden="true">→</span></button>
+            <button className="primary-button" type="button" onClick={() => void goNext()} disabled={nextDisabled}>{nextLabel} <Icon name="arrow-right" /></button>
           ) : (
-            <button className="primary-button" type="button" onClick={finish}>Concluir e abrir Inbox <span aria-hidden="true">→</span></button>
+            <button className="primary-button" type="button" onClick={finish}>Concluir e abrir Inbox <Icon name="arrow-right" /></button>
           )}
         </footer>
       </section>

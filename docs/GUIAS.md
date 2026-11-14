@@ -18,7 +18,7 @@ Cada provedor de IA (menu **IA**) tem uma **capacidade**:
 - **Voz precisa de STT** (transcrição) separado, em qualquer caso.
 - Texto funciona com qualquer provedor.
 
-No menu **IA**, cada provedor mostra um selo: 👁️ **multimodal** ou 📝 **só texto**.
+No menu **IA**, cada provedor mostra um selo: **multimodal** ou **só texto**.
 No menu **Agentes → Editar → IA**, você escolhe qual provedor o agente usa.
 
 ## Áudio / voz do cliente (STT)

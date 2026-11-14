@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { normalizeConversation } from '../features/inbox'
+import { Icon } from './icons'
 import './NotificationCenter.css'
 
 type WaitingItem = {
@@ -206,7 +207,7 @@ export function NotificationCenter({
 
           {!loading && !hasItems && (
             <div className="notifications-empty">
-              <span aria-hidden="true">✓</span>
+              <span aria-hidden="true"><Icon name="check" /></span>
               <strong>Nada pendente</strong>
               <small>Sem conversas aguardando ou falhas recentes.</small>
             </div>
@@ -217,7 +218,7 @@ export function NotificationCenter({
               <span className="notifications-group-title">Conversas aguardando</span>
               {waiting.map((item) => (
                 <button key={`waiting-${item.id}`} type="button" className="notifications-item" role="menuitem" onClick={() => selectWaiting(item.id)}>
-                  <span className="notifications-item-icon notifications-item-icon--waiting" aria-hidden="true">▣</span>
+                  <span className="notifications-item-icon notifications-item-icon--waiting" aria-hidden="true"><Icon name="inbox" /></span>
                   <span className="notifications-item-copy">
                     <strong>{item.title}</strong>
                     {item.subtitle && <small>{item.subtitle}</small>}

@@ -52,7 +52,7 @@ func defaultWidgetConfig() WidgetConfig {
 	return WidgetConfig{
 		Titulo:        "Atendimento",
 		Subtitulo:     "Estamos aqui para ajudar. Envie sua mensagem.",
-		BoasVindas:    "OlÃ¡! ðŸ‘‹ Sou o assistente virtual. Como posso ajudar?",
+		BoasVindas:    "Olá! Sou o assistente virtual. Como posso ajudar?",
 		Posicao:       "right",
 		Apresentacao:  "botao",
 		TituloBotao:   "Atendimento",
@@ -61,7 +61,7 @@ func defaultWidgetConfig() WidgetConfig {
 		CorFundo:      "#f4f6f8",
 		CorTexto:      "#ffffff",
 		CorTextoBotao: "#ffffff",
-		IconeBotao:    "💬",
+		IconeBotao:    "",
 		TextoInput:    "Digite sua mensagem...",
 		TextoRodape:   "Atendimento",
 		Largura:       360,
@@ -630,11 +630,13 @@ const widgetHTML = `<!DOCTYPE html>
 html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
 button { touch-action: manipulation; }
 :root { --wc-primary: #22c55e; --wc-button: #22c55e; --wc-button-text: #fff; --wc-bg: #f4f6f8; --wc-text: #fff; --wc-width: 360px; }
-.wc-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--wc-button); color: var(--wc-button-text); font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 9999; pointer-events: auto; transition: transform .18s ease, box-shadow .18s ease; }
+.wc-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--wc-button); color: var(--wc-button-text); font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 9999; pointer-events: auto; transition: transform .18s ease, box-shadow .18s ease; }
 .wc-btn:hover, .wc-bar:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(0,0,0,.28); }
 .wc-btn.left { right: auto; left: 20px; }
-.wc-bar { position: fixed; bottom: 20px; right: 20px; border: none; background: var(--wc-button); color: var(--wc-button-text); padding: 14px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 9999; pointer-events: auto; transition: transform .18s ease, box-shadow .18s ease; }
+.wc-bar { position: fixed; bottom: 20px; right: 20px; border: none; background: var(--wc-button); color: var(--wc-button-text); padding: 14px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 9999; pointer-events: auto; transition: transform .18s ease, box-shadow .18s ease; }
 .wc-bar.left { right: auto; left: 20px; }
+.wc-btn svg, .wc-bar svg { width: 26px; height: 26px; display: block; }
+.wc-head-actions svg { width: 18px; height: 18px; display: block; }
 .wc-box { position: fixed; bottom: 92px; right: 20px; width: var(--wc-width); max-width: calc(100vw - 40px); height: 480px; max-height: calc(100vh - 120px); background: #fff; border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.25); display: none; flex-direction: column; overflow: hidden; z-index: 9999; font-size: 14px; pointer-events: auto; }
 .wc-box.left { right: auto; left: 20px; }
 .wc-head { background: var(--wc-primary); color: var(--wc-text); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
@@ -675,11 +677,11 @@ button { touch-action: manipulation; }
 </style>
 </head>
 <body>
-<button type="button" class="wc-btn" id="wc-btn" style="display:none" aria-label="Abrir atendimento">💬</button>
-<button type="button" class="wc-bar" id="wc-bar" style="display:none"><span id="wc-bar-icon">💬</span> <span id="wc-bar-txt"></span></button>
+<button type="button" class="wc-btn" id="wc-btn" style="display:none" aria-label="Abrir atendimento"></button>
+<button type="button" class="wc-bar" id="wc-bar" style="display:none"><span id="wc-bar-icon"></span> <span id="wc-bar-txt"></span></button>
 <div class="wc-box" id="wc-box">
   <div class="wc-head">
-    <div class="wc-head-top"><div class="wc-head-brand"><img class="wc-head-logo" id="wc-logo" alt="" /><div class="wc-head-title"><h3 id="wc-title"></h3><p id="wc-subtitle"></p></div></div><div class="wc-head-actions"><button type="button" class="wc-end" id="wc-end">Encerrar</button><button type="button" id="wc-close" aria-label="Fechar janela">×</button></div></div>
+    <div class="wc-head-top"><div class="wc-head-brand"><img class="wc-head-logo" id="wc-logo" alt="" /><div class="wc-head-title"><h3 id="wc-title"></h3><p id="wc-subtitle"></p></div></div><div class="wc-head-actions"><button type="button" class="wc-end" id="wc-end">Encerrar</button><button type="button" id="wc-close" aria-label="Fechar janela"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div></div>
   </div>
   <div class="wc-identify" id="wc-identify">
     <h4>Antes de começarmos</h4>
@@ -718,7 +720,9 @@ button { touch-action: manipulation; }
   var sessionToken = localStorage.getItem('wc_session_' + storageKey);
   if (!sessionToken || sessionToken.length !== 43) { sessionToken = createSessionToken(); localStorage.setItem('wc_session_' + storageKey, sessionToken); }
   var visitorName = localStorage.getItem('wc_name_' + storageKey) || '';
-  var cfg = { titulo: 'Atendimento', subtitulo: 'Estamos aqui para ajudar. Envie sua mensagem.', boas_vindas: 'Olá! 👋 Sou o assistente virtual. Como posso ajudar?', apresentacao: 'botao', titulo_botao: 'Atendimento', logo_url: '', cor_primaria: '#22c55e', cor_botao: '#22c55e', cor_fundo: '#f4f6f8', cor_texto: '#ffffff', cor_texto_botao: '#ffffff', icone_botao: '💬', texto_input: 'Digite sua mensagem...', texto_rodape: 'Atendimento', largura: 360 };
+  var cfg = { titulo: 'Atendimento', subtitulo: 'Estamos aqui para ajudar. Envie sua mensagem.', boas_vindas: 'Olá! Sou o assistente virtual. Como posso ajudar?', apresentacao: 'botao', titulo_botao: 'Atendimento', logo_url: '', cor_primaria: '#22c55e', cor_botao: '#22c55e', cor_fundo: '#f4f6f8', cor_texto: '#ffffff', cor_texto_botao: '#ffffff', icone_botao: '', texto_input: 'Digite sua mensagem...', texto_rodape: 'Atendimento', largura: 360 };
+  var defaultLauncherIcon = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 8.5c0 3.5 2.5 6 6 6l1-1-2-1.5-.8.8c-1-.4-2.4-1.8-2.8-2.8l.8-.8L9.7 7.5 9 8.5Z"/></svg>';
+  function applyLauncherIcon(el) { if (cfg.icone_botao) { el.textContent = cfg.icone_botao; } else { el.innerHTML = defaultLauncherIcon; } }
   var box = document.getElementById('wc-box');
   var btn = document.getElementById('wc-btn');
   var bar = document.getElementById('wc-bar');
@@ -743,8 +747,8 @@ button { touch-action: manipulation; }
     document.getElementById('wc-title').textContent = cfg.titulo || 'Atendimento';
     document.getElementById('wc-subtitle').textContent = cfg.subtitulo || '';
     document.getElementById('wc-bar-txt').textContent = cfg.titulo_botao || 'Atendimento';
-    document.getElementById('wc-btn').textContent = cfg.icone_botao || '💬';
-    document.getElementById('wc-bar-icon').textContent = cfg.icone_botao || '💬';
+    applyLauncherIcon(document.getElementById('wc-btn'));
+    applyLauncherIcon(document.getElementById('wc-bar-icon'));
     document.getElementById('wc-foot').textContent = cfg.texto_rodape || 'Atendimento';
     var brandLogo = document.getElementById('wc-logo');
     if (cfg.logo_url) { brandLogo.src = cfg.logo_url; brandLogo.style.display = 'inline-block'; } else { brandLogo.removeAttribute('src'); brandLogo.style.display = 'none'; }

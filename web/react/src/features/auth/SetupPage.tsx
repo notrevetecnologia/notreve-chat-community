@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchReactData } from './authApi'
 import './Auth.css'
+import { Icon } from '../../shared/icons'
 
 type SetupPageProps = {
   onNavigate: (surface: string) => void
@@ -82,13 +83,13 @@ export function SetupPage({ onNavigate, brandName = 'Notreve' }: SetupPageProps)
       <section className="setup-list" aria-live="polite">
         {loading ? <div className="setup-loading">Carregando o estado da sua operação…</div> : steps.map((step, index) => (
           <article className={`setup-step-card${step.done === true ? ' done' : ''}`} key={step.id}>
-            <div className="setup-step-number">{step.done === true ? '✓' : String(index + 1).padStart(2, '0')}</div>
+            <div className="setup-step-number">{step.done === true ? <Icon name="check" /> : String(index + 1).padStart(2, '0')}</div>
             <div className="setup-step-copy">
               <div className="setup-step-title-row"><h2>{step.title}</h2>{step.required ? <span className="setup-required">Essencial</span> : <span className="setup-optional">Opcional</span>}</div>
               <p>{step.description}</p>
             </div>
             <button className={step.done === true ? 'setup-step-button secondary' : 'setup-step-button'} type="button" onClick={() => onNavigate(step.surface)}>
-              {step.done === true ? 'Revisar' : 'Configurar'} <span aria-hidden="true">→</span>
+              {step.done === true ? 'Revisar' : 'Configurar'} <Icon name="arrow-right" />
             </button>
           </article>
         ))}

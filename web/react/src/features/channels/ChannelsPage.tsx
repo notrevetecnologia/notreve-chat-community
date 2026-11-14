@@ -13,6 +13,7 @@ import {
   type ChannelConnectionState as ConnectionState,
   type ChannelOperationResult,
 } from './channelActions'
+import { Icon } from '../../shared/icons'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor } from '../../shared/Pagination'
 import {
   channelActionAvailable,
@@ -299,8 +300,8 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
   if (draft) {
     return (
       <div className="channels-page">
-        {error && <div className="channels-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-        {notice && <div className="channels-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+        {error && <div className="channels-alert" role="alert"><span><Icon name="alert-circle" /></span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+        {notice && <div className="channels-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
         <ChannelEditorPage
           draft={draft}
           editing={editingId !== null}
@@ -320,7 +321,7 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
           onDisconnect={(action) => { if (editingChannel) void disconnectChannelAction(editingChannel, action) }}
           onTest={() => { if (editingChannel) void testChannel(editingChannel) }}
         />
-        {qr && <Modal open title="Conectar WhatsApp" onClose={() => setQr(null)} size="sm"><div className="qr-content">{qr.image ? <img src={qr.image} alt="QR Code para conectar o WhatsApp" /> : <div className="qr-placeholder">◉</div>}<p>{qr.message}</p><span className="modal-hint">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</span></div></Modal>}
+        {qr && <Modal open title="Conectar WhatsApp" onClose={() => setQr(null)} size="sm"><div className="qr-content">{qr.image ? <img src={qr.image} alt="QR Code para conectar o WhatsApp" /> : <div className="qr-placeholder"><Icon name="whatsapp" /></div>}<p>{qr.message}</p><span className="modal-hint">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</span></div></Modal>}
       </div>
     )
   }
@@ -341,8 +342,8 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
         {canManage && <button className="primary-button" type="button" onClick={openCreate}>+ Criar canal</button>}
       </section>
 
-      {error && <div className="channels-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-      {notice && <div className="channels-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+      {error && <div className="channels-alert" role="alert"><span><Icon name="alert-circle" /></span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+      {notice && <div className="channels-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
       <FilterBar resultLabel={`${total} canal${total === 1 ? '' : 'is'}`} onReset={() => { setQuery(''); setTypeFilter(''); setStatusFilter('') }}>
         <FilterSearch value={query} onChange={setQuery} placeholder="Buscar canal ou agente" />
@@ -352,7 +353,7 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
       {loading ? (
         <div className="channels-state"><span className="channels-spinner" /> Carregando canais…</div>
       ) : sortedChannels.length === 0 ? (
-        <div className="channels-empty"><span className="channels-empty-icon">◈</span><strong>Nenhum canal conectado</strong><p>Comece pelo WhatsApp ou coloque o Webchat no seu site.</p>{canManage && <button className="primary-button" type="button" onClick={openCreate}>Criar primeiro canal</button>}</div>
+        <div className="channels-empty"><span className="channels-empty-icon"><Icon name="channels" /></span><strong>Nenhum canal conectado</strong><p>Comece pelo WhatsApp ou coloque o Webchat no seu site.</p>{canManage && <button className="primary-button" type="button" onClick={openCreate}>Criar primeiro canal</button>}</div>
       ) : (
         <div className="channels-grid">
           {sortedChannels.map((channel) => {
@@ -361,7 +362,7 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
             return (
               <article className="channel-card" key={channel.id}>
                 <header className="channel-card-header">
-                  <div className={`channel-icon channel-icon--${channel.type}`}>{channel.type === 'whatsapp' ? '◉' : channel.type === 'telegram' ? '✈' : '◈'}</div>
+                  <div className={`channel-icon channel-icon--${channel.type}`}>{channel.type === 'whatsapp' ? <Icon name="whatsapp" /> : channel.type === 'telegram' ? <Icon name="telegram" /> : <Icon name="globe" />}</div>
                   <div className="channel-card-title"><span>{channelLabel(channel.type)}</span><h3>{channel.name}</h3></div>
                   <span className={`channel-active-badge ${channel.active ? 'is-active' : ''}`}><i />{channel.active ? 'Ativo' : 'Inativo'}</span>
                 </header>
@@ -415,7 +416,7 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
 
       {!loading && sortedChannels.length > 0 && <Pagination total={total} limit={DEFAULT_PAGE_SIZE} offset={offset} onOffsetChange={setOffset} loading={loading} />}
 
-      {qr && <Modal open title="Conectar WhatsApp" onClose={() => setQr(null)} size="sm"><div className="qr-content">{qr.image ? <img src={qr.image} alt="QR Code para conectar o WhatsApp" /> : <div className="qr-placeholder">◉</div>}<p>{qr.message}</p><span className="modal-hint">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</span></div></Modal>}
+      {qr && <Modal open title="Conectar WhatsApp" onClose={() => setQr(null)} size="sm"><div className="qr-content">{qr.image ? <img src={qr.image} alt="QR Code para conectar o WhatsApp" /> : <div className="qr-placeholder"><Icon name="whatsapp" /></div>}<p>{qr.message}</p><span className="modal-hint">No celular: WhatsApp → Aparelhos conectados → Conectar um aparelho.</span></div></Modal>}
     </div>
   )
 }

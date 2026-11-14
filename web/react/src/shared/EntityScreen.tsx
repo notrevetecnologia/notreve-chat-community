@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Icon } from './icons'
 import './EntityScreen.css'
 
 export type EntityTab = {
@@ -36,7 +37,7 @@ export function EntityScreen({
     <div className="entity-screen">
       <header className="entity-screen-header">
         <button className="entity-back" type="button" onClick={onBack} aria-label={backLabel}>
-          ←
+          <Icon name="arrow-left" />
         </button>
         <div className="entity-screen-title">
           <span className="eyebrow">{eyebrow}</span>
@@ -75,10 +76,10 @@ export function EntityScreen({
 export function EntityAlert({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   return (
     <div className="entity-alert" role="alert">
-      <span>!</span>
+      <span><Icon name="alert-circle" /></span>
       <p>{children}</p>
       <button type="button" onClick={onClose} aria-label="Fechar aviso">
-        ×
+        <Icon name="close" />
       </button>
     </div>
   )
@@ -87,10 +88,10 @@ export function EntityAlert({ children, onClose }: { children: ReactNode; onClos
 export function EntityNotice({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   return (
     <div className="entity-notice" role="status">
-      <span>✓</span>
+      <span><Icon name="check" /></span>
       <p>{children}</p>
       <button type="button" onClick={onClose} aria-label="Fechar aviso">
-        ×
+        <Icon name="close" />
       </button>
     </div>
   )

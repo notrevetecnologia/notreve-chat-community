@@ -81,28 +81,28 @@ Grupo · item · módulo · permissão → quem vê.
 
 | Grupo | Item (`navigation.ts`) | Módulo | Permissão | admin | supervisor | atendente | super_admin |
 |-------|------------------------|--------|-----------|:-----:|:----------:|:---------:|:-----------:|
-| Atendimento | Visão geral | conversas | `conversas_ver` | ✅ | ✅ | ✅ | — |
-| Atendimento | Caixa de entrada | conversas | `conversas_ver` | ✅ | ✅ | ✅ | — |
-| Atendimento | Relatórios | relatorios | `relatorios_ver` | ✅ | ✅ | — | — |
-| Atendimento | Assistente de configuração | config | `config_gerenciar` | ✅ | — | — | — |
-| Relacionamento | Contatos | contatos | `contatos_gerenciar` | ✅ | ✅ | ✅ | — |
-| Relacionamento | Campanhas e segmentos | campanhas | `campanhas_ver` | ✅ | ✅ | — | — |
-| Inteligência | Agentes | ia | `agentes_gerenciar` | ✅ | ✅ | — | — |
-| Inteligência | Base de conhecimento | ia | `agentes_gerenciar` | ✅ | ✅ | — | — |
-| Inteligência | Provedores de IA | ia | `ias_gerenciar` | ✅ | — | — | — |
-| Inteligência | Aprendizado | ia | `aprendizado_ver` | ✅ | ✅ | — | — |
-| Inteligência | Skills | ia | `agentes_gerenciar` | ✅ | ✅ | — | — |
-| Inteligência | Chat Flow | chatflows | `chatflows_gerenciar` | ✅ | — | — | — |
-| Canais | Canais | canais | `canais_gerenciar` | ✅ | — | — | — |
-| Automação | Integrações e API | tools **ou** api | `integracoes_gerenciar` | ✅ | — | — | — |
-| Operação | Equipe e setores | equipe | `setores_gerenciar` **ou** `equipe_gerenciar` | ✅ | ✅ | — | — |
-| Operação | Agendamentos | agendamentos | `agendamentos_gerenciar` | ✅ | — | — | — |
-| Operação | Biblioteca de mensagens | mensagens | `respostas_gerenciar` **ou** `mensagens_gerenciar` | ✅ | ✅ | ✅ | — |
-| Administração | Configurações do atendimento | config | `config_gerenciar` | ✅ | — | — | — |
-| Administração | Logs | config | `logs_ver` | ✅ | — | — | — |
-| Administração | LGPD e privacidade | lgpd | `config_gerenciar` | ✅ | — | — | — |
-| Plataforma | Plataforma e white-label | config | `plataforma_gerenciar` | — | — | — | ✅ |
-| Plataforma | Planos e limites | config | `plataforma_gerenciar` | — | — | — | ✅ |
+| Atendimento | Visão geral | conversas | `conversas_ver` | Sim | Sim | Sim | — |
+| Atendimento | Caixa de entrada | conversas | `conversas_ver` | Sim | Sim | Sim | — |
+| Atendimento | Relatórios | relatorios | `relatorios_ver` | Sim | Sim | — | — |
+| Atendimento | Assistente de configuração | config | `config_gerenciar` | Sim | — | — | — |
+| Relacionamento | Contatos | contatos | `contatos_gerenciar` | Sim | Sim | Sim | — |
+| Relacionamento | Campanhas e segmentos | campanhas | `campanhas_ver` | Sim | Sim | — | — |
+| Inteligência | Agentes | ia | `agentes_gerenciar` | Sim | Sim | — | — |
+| Inteligência | Base de conhecimento | ia | `agentes_gerenciar` | Sim | Sim | — | — |
+| Inteligência | Provedores de IA | ia | `ias_gerenciar` | Sim | — | — | — |
+| Inteligência | Aprendizado | ia | `aprendizado_ver` | Sim | Sim | — | — |
+| Inteligência | Skills | ia | `agentes_gerenciar` | Sim | Sim | — | — |
+| Inteligência | Chat Flow | chatflows | `chatflows_gerenciar` | Sim | — | — | — |
+| Canais | Canais | canais | `canais_gerenciar` | Sim | — | — | — |
+| Automação | Integrações e API | tools **ou** api | `integracoes_gerenciar` | Sim | — | — | — |
+| Operação | Equipe e setores | equipe | `setores_gerenciar` **ou** `equipe_gerenciar` | Sim | Sim | — | — |
+| Operação | Agendamentos | agendamentos | `agendamentos_gerenciar` | Sim | — | — | — |
+| Operação | Biblioteca de mensagens | mensagens | `respostas_gerenciar` **ou** `mensagens_gerenciar` | Sim | Sim | Sim | — |
+| Administração | Configurações do atendimento | config | `config_gerenciar` | Sim | — | — | — |
+| Administração | Logs | config | `logs_ver` | Sim | — | — | — |
+| Administração | LGPD e privacidade | lgpd | `config_gerenciar` | Sim | — | — | — |
+| Plataforma | Plataforma e white-label | config | `plataforma_gerenciar` | — | — | — | Sim |
+| Plataforma | Planos e limites | config | `plataforma_gerenciar` | — | — | — | Sim |
 
 > O `super_admin` só enxerga o grupo **Plataforma** (`app-shell.tsx` filtra por
 > `item.group === 'plataforma'`). O `admin` enxerga o grupo **Administração**
@@ -133,40 +133,40 @@ Grupo · item · módulo · permissão → quem vê.
 
 | Rota | Permissão efetiva | Módulo | super_admin | admin | supervisor | atendente |
 |------|-------------------|--------|:-----------:|:-----:|:----------:|:---------:|
-| `GET /api/react/session` · `/bootstrap` | autenticado | — | ✅ | ✅ | ✅ | ✅ |
-| `GET /api/react/overview` | `conversas_ver` | conversas | — | ✅ | ✅ | ✅ |
-| `GET /api/react/dashboard` | `conversas_ver` | conversas | — | ✅ | ✅ | ✅ |
-| `GET/PUT /api/react/branding` | `super_admin` (legado) | — | ✅ | — | — | — |
-| `GET/PUT /api/react/platform/branding` | `super_admin` | — | ✅ | — | — | — |
-| `GET/POST/PATCH/DELETE /api/react/channels` | `canais_gerenciar` | canais | — | ✅ | — | — |
-| `GET/POST/PATCH/DELETE /api/react/contacts` | `contatos_gerenciar` | contatos | — | ✅ | ✅ | ✅ |
-| `… /api/react/agents` (+ toggle/refetch/test/channels) | `agentes_gerenciar` | ia | — | ✅ | ✅ | — |
-| `… /api/react/chatflows` | `chatflows_gerenciar` | chatflows | — | ✅ | — | — |
-| `… /api/react/providers` (+ test/models) | `ias_gerenciar` | ia | — | ✅ | — | — |
-| `… /api/react/integrations` | `integracoes_gerenciar` | tools | — | ✅ | — | — |
-| `… /api/react/api-keys` · `/api-docs` | `integracoes_gerenciar` | api | — | ✅ | — | — |
-| `… /api/react/skills` | `agentes_gerenciar` | ia | — | ✅ | ✅ | — |
-| `… /api/react/mcp` | `integracoes_gerenciar` | tools | — | ✅ | — | — |
-| `… /api/react/webhooks` | `integracoes_gerenciar` | api | — | ✅ | — | — |
-| `GET /api/react/learning` · `agent-failures` | `aprendizado_ver` | ia | — | ✅ | ✅ | — |
-| `GET/POST/DELETE /api/react/knowledge` | `agentes_gerenciar` | ia | — | ✅ | ✅ | — |
-| `… /api/react/quick-replies` | `respostas_gerenciar` | mensagens | — | ✅ | ✅ | ✅ |
-| `… /api/react/message-templates` | `mensagens_gerenciar` | mensagens | — | ✅ | ✅ | — |
-| `… /api/react/platform/*` (tenants, planos, servidores, admins, switch) | `super_admin` | — | ✅ | — | — | — |
-| `GET /api/react/team` · `/sectors` | `setores_gerenciar` **ou** `equipe_gerenciar` | equipe | — | ✅ | ✅ | — |
-| `POST/PATCH/DELETE /api/react/sectors` (+ toggle) | `setores_gerenciar` | equipe | — | ✅ | ✅ | — |
-| `… /api/react/users` | `equipe_gerenciar` | equipe | — | ✅ | — | — |
-| `GET/PATCH /api/react/settings` | `config_gerenciar` | config | — | ✅ | — | — |
-| `GET /api/react/logs` · `/logs/stats` | `logs_ver` | config | — | ✅ | — | — |
-| `… /api/react/lgpd/*` | `config_gerenciar` | lgpd | — | ✅ | — | — |
-| `… /api/react/campaigns` · `/segments` | `campanhas_ver` / `campanhas_gerenciar` | campanhas | — | ✅ | ✅ | — |
-| `… /api/react/campaign-groups` | `grupos_canais_gerenciar` | campanhas | — | ✅ | ✅ | — |
-| `… /api/react/schedules` (+ `/{id}/trigger`) | `agendamentos_gerenciar` | agendamentos | — | ✅ | — | — |
-| `GET /api/react/reports` · `/reports/export` | `relatorios_ver` | relatorios | — | ✅ | ✅ | — |
-| `GET /api/react/conversations` · `/{id}` | `conversas_ver` | conversas | — | ✅ | ✅ | ✅ |
-| `POST /api/react/conversations/{id}/messages` | `conversas_responder` | conversas | — | ✅ | ✅ | ✅ |
-| `POST /api/react/conversations/{id}/actions` | por ação (`responder`/`transferir`/`encerrar`) | conversas | — | ✅ | ✅ | ✅ |
-| `POST /api/react/conversations/{id}/bot-block` | `conversas_responder` | conversas | — | ✅ | ✅ | ✅ |
+| `GET /api/react/session` · `/bootstrap` | autenticado | — | Sim | Sim | Sim | Sim |
+| `GET /api/react/overview` | `conversas_ver` | conversas | — | Sim | Sim | Sim |
+| `GET /api/react/dashboard` | `conversas_ver` | conversas | — | Sim | Sim | Sim |
+| `GET/PUT /api/react/branding` | `super_admin` (legado) | — | Sim | — | — | — |
+| `GET/PUT /api/react/platform/branding` | `super_admin` | — | Sim | — | — | — |
+| `GET/POST/PATCH/DELETE /api/react/channels` | `canais_gerenciar` | canais | — | Sim | — | — |
+| `GET/POST/PATCH/DELETE /api/react/contacts` | `contatos_gerenciar` | contatos | — | Sim | Sim | Sim |
+| `… /api/react/agents` (+ toggle/refetch/test/channels) | `agentes_gerenciar` | ia | — | Sim | Sim | — |
+| `… /api/react/chatflows` | `chatflows_gerenciar` | chatflows | — | Sim | — | — |
+| `… /api/react/providers` (+ test/models) | `ias_gerenciar` | ia | — | Sim | — | — |
+| `… /api/react/integrations` | `integracoes_gerenciar` | tools | — | Sim | — | — |
+| `… /api/react/api-keys` · `/api-docs` | `integracoes_gerenciar` | api | — | Sim | — | — |
+| `… /api/react/skills` | `agentes_gerenciar` | ia | — | Sim | Sim | — |
+| `… /api/react/mcp` | `integracoes_gerenciar` | tools | — | Sim | — | — |
+| `… /api/react/webhooks` | `integracoes_gerenciar` | api | — | Sim | — | — |
+| `GET /api/react/learning` · `agent-failures` | `aprendizado_ver` | ia | — | Sim | Sim | — |
+| `GET/POST/DELETE /api/react/knowledge` | `agentes_gerenciar` | ia | — | Sim | Sim | — |
+| `… /api/react/quick-replies` | `respostas_gerenciar` | mensagens | — | Sim | Sim | Sim |
+| `… /api/react/message-templates` | `mensagens_gerenciar` | mensagens | — | Sim | Sim | — |
+| `… /api/react/platform/*` (tenants, planos, servidores, admins, switch) | `super_admin` | — | Sim | — | — | — |
+| `GET /api/react/team` · `/sectors` | `setores_gerenciar` **ou** `equipe_gerenciar` | equipe | — | Sim | Sim | — |
+| `POST/PATCH/DELETE /api/react/sectors` (+ toggle) | `setores_gerenciar` | equipe | — | Sim | Sim | — |
+| `… /api/react/users` | `equipe_gerenciar` | equipe | — | Sim | — | — |
+| `GET/PATCH /api/react/settings` | `config_gerenciar` | config | — | Sim | — | — |
+| `GET /api/react/logs` · `/logs/stats` | `logs_ver` | config | — | Sim | — | — |
+| `… /api/react/lgpd/*` | `config_gerenciar` | lgpd | — | Sim | — | — |
+| `… /api/react/campaigns` · `/segments` | `campanhas_ver` / `campanhas_gerenciar` | campanhas | — | Sim | Sim | — |
+| `… /api/react/campaign-groups` | `grupos_canais_gerenciar` | campanhas | — | Sim | Sim | — |
+| `… /api/react/schedules` (+ `/{id}/trigger`) | `agendamentos_gerenciar` | agendamentos | — | Sim | — | — |
+| `GET /api/react/reports` · `/reports/export` | `relatorios_ver` | relatorios | — | Sim | Sim | — |
+| `GET /api/react/conversations` · `/{id}` | `conversas_ver` | conversas | — | Sim | Sim | Sim |
+| `POST /api/react/conversations/{id}/messages` | `conversas_responder` | conversas | — | Sim | Sim | Sim |
+| `POST /api/react/conversations/{id}/actions` | por ação (`responder`/`transferir`/`encerrar`) | conversas | — | Sim | Sim | Sim |
+| `POST /api/react/conversations/{id}/bot-block` | `conversas_responder` | conversas | — | Sim | Sim | Sim |
 
 ## Funções dentro das páginas
 

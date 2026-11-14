@@ -18,6 +18,7 @@ import {
   requestNotificationPermission,
   showDesktopNotification,
 } from '../../shared/notifications'
+import { Icon } from '../../shared/icons'
 import './Inbox.css'
 
 export interface InboxPageProps {
@@ -261,7 +262,7 @@ const renderMedia = (message: Message): React.ReactNode => {
   if (type === 'audio') {
     return <audio className="inbox-media-audio" controls preload="metadata" src={source} />
   }
-  return <a className="inbox-media-document" href={source} download={name} target="_blank" rel="noreferrer"><span className="inbox-media-document-icon">▣</span><span><strong>{name}</strong><small>{message.mediaMime || 'arquivo'}</small></span><span aria-hidden="true">↓</span></a>
+  return <a className="inbox-media-document" href={source} download={name} target="_blank" rel="noreferrer"><span className="inbox-media-document-icon"><Icon name="file-text" /></span><span><strong>{name}</strong><small>{message.mediaMime || 'arquivo'}</small></span><span aria-hidden="true"><Icon name="download" /></span></a>
 }
 
 function LazyMedia({ message }: { message: Message }) {
@@ -977,7 +978,7 @@ export function InboxPage({
 
         {notificationState === 'default' && (
           <div className="inbox-notify-bar" role="status">
-            <span className="inbox-notify-icon" aria-hidden="true">♢</span>
+            <span className="inbox-notify-icon" aria-hidden="true"><Icon name="bell" /></span>
             <span className="inbox-notify-text">Receba um aviso quando chegar uma nova mensagem.</span>
             <button type="button" onClick={() => void handleEnableNotifications()}>Ativar avisos</button>
           </div>
@@ -985,7 +986,7 @@ export function InboxPage({
 
         <div className="inbox-search-wrap">
           <label htmlFor="inbox-search" className="sr-only">Buscar conversa</label>
-          <span className="inbox-search-icon" aria-hidden="true">⌕</span>
+          <span className="inbox-search-icon" aria-hidden="true"><Icon name="search" /></span>
           <input
             id="inbox-search"
             className="inbox-search"
@@ -1035,7 +1036,7 @@ export function InboxPage({
             </div>
           ) : visibleConversations.length === 0 ? (
             <div className="inbox-state" role="status">
-              <span className="inbox-state-icon" aria-hidden="true">⌕</span>
+              <span className="inbox-state-icon" aria-hidden="true"><Icon name="search" /></span>
               <strong>{search ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa por aqui'}</strong>
               <span>{search ? 'Tente outro termo de busca.' : 'Novos atendimentos aparecerão nesta lista.'}</span>
             </div>
@@ -1080,7 +1081,7 @@ export function InboxPage({
       <section className="inbox-detail-panel" aria-label="Conversa selecionada">
         {!selectedConversation ? (
           <div className="inbox-state inbox-state--detail">
-            <span className="inbox-state-icon" aria-hidden="true">◌</span>
+            <span className="inbox-state-icon" aria-hidden="true"><Icon name="inbox" /></span>
             <strong>Selecione uma conversa</strong>
             <span>Escolha um atendimento para visualizar as mensagens.</span>
           </div>
@@ -1088,7 +1089,7 @@ export function InboxPage({
           <>
             <header className="inbox-detail-header">
               <button type="button" className="inbox-back-button" onClick={() => setMobileDetailOpen(false)} aria-label="Voltar para a lista de conversas">
-                ← <span>Conversas</span>
+                <Icon name="arrow-left" /> <span>Conversas</span>
               </button>
               <div className="inbox-detail-header-main">
                 <div className="inbox-detail-kicker">
@@ -1118,13 +1119,13 @@ export function InboxPage({
                   aria-controls="inbox-context-panel"
                   onClick={() => setContextOpen((current) => !current)}
                 >
-                  <span aria-hidden="true">◎</span>
+                  <span aria-hidden="true"><Icon name="user" /></span>
                   {contextOpen ? 'Fechar contexto' : 'Abrir contexto'}
                 </button>
                 <span className={`inbox-status inbox-status--large inbox-status--${selectedConversation.status}`}>
                   <span className="inbox-status-dot" /> {statusLabel(selectedConversation.status)}
                 </span>
-                {selectedConversation.botBlocked && <span className="inbox-bot-badge" title="Possível outro bot — mensagens estão sendo ignoradas">🤖 Bot suspeito</span>}
+                {selectedConversation.botBlocked && <span className="inbox-bot-badge" title="Possível outro bot — mensagens estão sendo ignoradas"><Icon name="bot" /> Bot suspeito</span>}
                 <span className="inbox-last-seen">Atualizado {formatDateTime(selectedConversation.updatedAt)}</span>
               </div>
             </header>
@@ -1134,7 +1135,7 @@ export function InboxPage({
                 {selectedConversation.status === 'closed' ? (
                   canClose && (
                     <button type="button" className="inbox-action inbox-action--primary" onClick={handleReopen} disabled={Boolean(actionPending)}>
-                      <span aria-hidden="true">↗</span>
+                      <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
                       {actionPending === 'reopen' ? 'Reabrindo…' : 'Reabrir atendimento'}
                     </button>
                   )
@@ -1142,19 +1143,19 @@ export function InboxPage({
                   <>
                     {canClose && (
                       <button type="button" className="inbox-action inbox-action--danger" onClick={handleClose} disabled={Boolean(actionPending)}>
-                        <span aria-hidden="true">✓</span>
+                        <span aria-hidden="true"><Icon name="check" /></span>
                         {actionPending === 'close' ? 'Encerrando…' : 'Encerrar atendimento'}
                       </button>
                     )}
                     {canRespond && (selectedConversation.status === 'ia' || selectedConversation.status === 'humano_aguardando') && (
                       <button type="button" className="inbox-action inbox-action--primary" onClick={handleAccept} disabled={Boolean(actionPending)}>
-                        <span aria-hidden="true">＋</span>
+                        <span aria-hidden="true"><Icon name="plus" /></span>
                         {actionPending === 'accept' ? 'Assumindo…' : 'Assumir conversa'}
                       </button>
                     )}
                     {canReturnToAI && (selectedConversation.status === 'humano_atendendo' || selectedConversation.status === 'humano_aguardando') && (
                       <button type="button" className="inbox-action inbox-action--ai" onClick={handleReturnToAI} disabled={Boolean(actionPending)}>
-                        <span aria-hidden="true">✦</span>
+                        <span aria-hidden="true"><Icon name="bot" /></span>
                         {actionPending === 'return-to-ai' ? 'Devolvendo…' : 'Devolver para IA'}
                       </button>
                     )}
@@ -1165,14 +1166,14 @@ export function InboxPage({
                 )}
                 {selectedConversation.botBlocked && api.setBotBlocked && (
                   <button type="button" className="inbox-action" onClick={() => void runAction('unblock', () => api.setBotBlocked!(selectedConversation.id, false))} disabled={Boolean(actionPending)}>
-                    <span aria-hidden="true">✓</span>
+                    <span aria-hidden="true"><Icon name="check" /></span>
                     {actionPending === 'unblock' ? 'Desbloqueando…' : 'Desbloquear bot'}
                   </button>
                 )}
               </div>
               {canTransfer && selectedConversation.status !== 'closed' && (
                 <div className="inbox-transfer-control">
-                  <span className="inbox-transfer-label" aria-hidden="true">↗</span>
+                  <span className="inbox-transfer-label" aria-hidden="true"><Icon name="arrow-left-right" /></span>
                   <label htmlFor="inbox-transfer">Transferir atendimento</label>
                   <select id="inbox-transfer" value={transferValue} onChange={(event) => setTransferValue(event.target.value)} disabled={Boolean(actionPending)}>
                     <option value="">Selecione um destino</option>
@@ -1213,7 +1214,7 @@ export function InboxPage({
             {selectedConversation.aiSummary.trim() && (
               <aside className="inbox-ai-summary" role="note" aria-label="Resumo da IA">
                 <div className="inbox-ai-summary-head">
-                  <span className="inbox-ai-summary-icon" aria-hidden="true">✦</span>
+                  <span className="inbox-ai-summary-icon" aria-hidden="true"><Icon name="bot" /></span>
                   <strong>Resumo da IA</strong>
                   {selectedConversation.aiSummaryAt && <time dateTime={selectedConversation.aiSummaryAt}>{formatDateTime(selectedConversation.aiSummaryAt)}</time>}
                 </div>
@@ -1241,16 +1242,16 @@ export function InboxPage({
                               <span>{messageLabel(message)}</span>
                               <time dateTime={message.createdAt}>{formatDateTime(message.createdAt)}</time>
                             </div>
-                            {message.replyTo && <div className="inbox-message-quote"><span>↩</span><span><strong>Respondendo</strong><small>{message.replyTo.content || message.replyTo.mediaName || 'Mensagem com mídia'}</small></span></div>}
+                            {message.replyTo && <div className="inbox-message-quote"><span><Icon name="corner-down-left" /></span><span><strong>Respondendo</strong><small>{message.replyTo.content || message.replyTo.mediaName || 'Mensagem com mídia'}</small></span></div>}
                             <LazyMedia message={message} />
-                            {message.content && (!message.hasMedia || !message.content.startsWith('📎')) && <p>{message.content}</p>}
+                            {message.content && (!message.hasMedia || (!message.content.startsWith('[Arquivo]') && !message.content.startsWith('\u{1F4CE}'))) && <p>{message.content}</p>}
                             {!message.content && !message.hasMedia && <p>Mensagem sem texto</p>}
                             <footer>
                               <span>{message.source === 'ai' ? 'Assistente virtual' : message.source === 'customer' || message.role === 'user' ? 'Mensagem recebida' : 'Mensagem enviada'}{message.edited ? ' · editada' : ''}</span>
                               <span className="inbox-message-actions">
-                                {(message.source === 'customer' || message.role === 'user') && <button type="button" className="inbox-message-action" onClick={() => handleReply(message)} title="Responder esta mensagem" aria-label="Responder esta mensagem">↩</button>}
-                                {message.source !== 'customer' && message.role !== 'user' && message.waMessageId && <button type="button" className="inbox-message-action" onClick={() => handleEdit(message)} title="Editar mensagem" aria-label="Editar mensagem">✎</button>}
-                                {message.waMessageId && <button type="button" className="inbox-message-action" data-inbox-popover-trigger="reaction" onClick={() => setReactionPickerId((current) => current === message.id ? null : message.id)} title="Reagir" aria-label="Reagir">☺</button>}
+                                {(message.source === 'customer' || message.role === 'user') && <button type="button" className="inbox-message-action" onClick={() => handleReply(message)} title="Responder esta mensagem" aria-label="Responder esta mensagem"><Icon name="corner-down-left" /></button>}
+                                {message.source !== 'customer' && message.role !== 'user' && message.waMessageId && <button type="button" className="inbox-message-action" onClick={() => handleEdit(message)} title="Editar mensagem" aria-label="Editar mensagem"><Icon name="pencil" /></button>}
+                                {message.waMessageId && <button type="button" className="inbox-message-action" data-inbox-popover-trigger="reaction" onClick={() => setReactionPickerId((current) => current === message.id ? null : message.id)} title="Reagir" aria-label="Reagir"><Icon name="smile" /></button>}
                               </span>
                             </footer>
                             {message.reactions && message.reactions.length > 0 && <div className="inbox-message-reactions">{message.reactions.map((reaction) => <span key={reaction.emoji} title={`${reaction.count ?? 1} reação(ões)`}>{reaction.emoji}{(reaction.count ?? 0) > 1 ? <small>{reaction.count}</small> : null}</span>)}</div>}
@@ -1263,7 +1264,7 @@ export function InboxPage({
                 </>
               ) : (
                 <div className="inbox-state" role="status">
-                  <span className="inbox-state-icon" aria-hidden="true">✦</span>
+                  <span className="inbox-state-icon" aria-hidden="true"><Icon name="inbox" /></span>
                   <strong>Sem mensagens ainda</strong>
                   <span>Envie a primeira mensagem para iniciar o atendimento.</span>
                 </div>
@@ -1276,14 +1277,14 @@ export function InboxPage({
                   <span className="inbox-composer-mode"><span className="inbox-composer-mode-dot" /> {editingMessageId !== null ? 'Editando mensagem' : pendingFile ? 'Arquivo pronto para enviar' : 'Resposta manual'}</span>
                   <span className="inbox-composer-hint">Enter envia · Shift + Enter quebra linha</span>
                 </div>
-                {replyTo && <div className="inbox-reply-preview"><span><strong>Respondendo a {messageLabel(replyTo)}</strong><small>{replyTo.content || replyTo.mediaName || 'Mensagem com mídia'}</small></span><button type="button" onClick={() => setReplyTo(null)} aria-label="Cancelar resposta">×</button></div>}
+                {replyTo && <div className="inbox-reply-preview"><span><strong>Respondendo a {messageLabel(replyTo)}</strong><small>{replyTo.content || replyTo.mediaName || 'Mensagem com mídia'}</small></span><button type="button" onClick={() => setReplyTo(null)} aria-label="Cancelar resposta"><Icon name="close" /></button></div>}
                 {editingMessageId !== null && <div className="inbox-edit-preview"><span>Você está editando uma mensagem</span><button type="button" onClick={() => { setEditingMessageId(null); setDraft('') }} aria-label="Cancelar edição">Cancelar</button></div>}
                 {pendingFile && <div className="inbox-upload-preview">
                   <div className="inbox-upload-preview-media">
-                    {pendingFile.type.startsWith('image/') && pendingFileUrl ? <img src={pendingFileUrl} alt="Prévia do arquivo" /> : pendingFile.type.startsWith('video/') && pendingFileUrl ? <video src={pendingFileUrl} muted controls /> : pendingFile.type.startsWith('audio/') && pendingFileUrl ? <audio src={pendingFileUrl} controls /> : <span className="inbox-upload-file-icon">▣</span>}
+                    {pendingFile.type.startsWith('image/') && pendingFileUrl ? <img src={pendingFileUrl} alt="Prévia do arquivo" /> : pendingFile.type.startsWith('video/') && pendingFileUrl ? <video src={pendingFileUrl} muted controls /> : pendingFile.type.startsWith('audio/') && pendingFileUrl ? <audio src={pendingFileUrl} controls /> : <span className="inbox-upload-file-icon"><Icon name="file-text" /></span>}
                   </div>
                   <div className="inbox-upload-preview-info"><strong>{pendingFile.name}</strong><small>{(pendingFile.size / 1024 / 1024).toFixed(2)} MB · legenda opcional</small></div>
-                  <button type="button" onClick={clearPendingFile} aria-label="Remover arquivo">×</button>
+                  <button type="button" onClick={clearPendingFile} aria-label="Remover arquivo"><Icon name="close" /></button>
                 </div>}
                 <label htmlFor="inbox-message" className="sr-only">Mensagem</label>
                 <textarea
@@ -1311,14 +1312,14 @@ export function InboxPage({
                 <div className="inbox-composer-bottomline">
                   <div className="inbox-composer-tools">
                     <input ref={fileInputRef} type="file" hidden accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip" onChange={handleFileInput} />
-                    <button type="button" className="inbox-tool-button" onClick={() => fileInputRef.current?.click()} disabled={sending || recording || composerDisabled} title="Anexar arquivo" aria-label="Anexar arquivo">＋</button>
-                    <button type="button" className={`inbox-tool-button ${composerEmojiOpen ? 'inbox-tool-button--active' : ''}`} data-inbox-popover-trigger="composer-emoji" onClick={() => { setComposerEmojiOpen((current) => !current); setShortcutOpen(false) }} disabled={sending || recording || composerDisabled} title="Adicionar emoji" aria-label="Adicionar emoji">☺</button>
-                    <button type="button" className={`inbox-tool-button inbox-record-button ${recording ? 'inbox-record-button--active' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={sending || composerDisabled} title={recording ? 'Parar gravação' : 'Gravar áudio'} aria-label={recording ? 'Parar gravação' : 'Gravar áudio'}>{recording ? '■' : '●'}</button>
+                    <button type="button" className="inbox-tool-button" onClick={() => fileInputRef.current?.click()} disabled={sending || recording || composerDisabled} title="Anexar arquivo" aria-label="Anexar arquivo"><Icon name="paperclip" /></button>
+                    <button type="button" className={`inbox-tool-button ${composerEmojiOpen ? 'inbox-tool-button--active' : ''}`} data-inbox-popover-trigger="composer-emoji" onClick={() => { setComposerEmojiOpen((current) => !current); setShortcutOpen(false) }} disabled={sending || recording || composerDisabled} title="Adicionar emoji" aria-label="Adicionar emoji"><Icon name="smile" /></button>
+                    <button type="button" className={`inbox-tool-button inbox-record-button ${recording ? 'inbox-record-button--active' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={sending || composerDisabled} title={recording ? 'Parar gravação' : 'Gravar áudio'} aria-label={recording ? 'Parar gravação' : 'Gravar áudio'}>{recording ? <Icon name="square" /> : <Icon name="dot" />}</button>
                     {composerEmojiOpen && <div className="inbox-composer-emoji-picker" role="dialog" aria-label="Escolher emoji">{emojiList.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)}>{emoji}</button>)}</div>}
                   </div>
                   <span className="inbox-composer-counter">{draft.length} caracteres</span>
                   <button type="submit" className="inbox-send-button" disabled={(!draft.trim() && !pendingFile) || sending || recording || composerDisabled}>
-                    {sending ? 'Enviando…' : <><span>{editingMessageId !== null ? 'Salvar edição' : pendingFile ? 'Enviar arquivo' : 'Enviar mensagem'}</span><span aria-hidden="true">↗</span></>}
+                    {sending ? 'Enviando…' : <><span>{editingMessageId !== null ? 'Salvar edição' : pendingFile ? 'Enviar arquivo' : 'Enviar mensagem'}</span><Icon name="send" /></>}
                   </button>
                 </div>
               </div>
@@ -1330,7 +1331,7 @@ export function InboxPage({
       <aside id="inbox-context-panel" className="inbox-context-panel" aria-label="Contexto do atendimento" aria-hidden={!contextOpen}>
         {!selectedConversation ? (
           <div className="inbox-context-empty">
-            <span className="inbox-context-empty-icon" aria-hidden="true">◎</span>
+            <span className="inbox-context-empty-icon" aria-hidden="true"><Icon name="user" /></span>
             <strong>Contexto do cliente</strong>
             <span>Selecione uma conversa para ver os detalhes do atendimento.</span>
           </div>
@@ -1382,7 +1383,7 @@ export function InboxPage({
                         <div key={index} className="inbox-contact-extra-row">
                           <input value={extra.key} onChange={(event) => updateContactExtra(index, { key: event.target.value })} placeholder="chave" />
                           <input value={extra.value} onChange={(event) => updateContactExtra(index, { value: event.target.value })} placeholder="valor" />
-                          <button type="button" onClick={() => removeContactExtra(index)} aria-label="Remover campo">×</button>
+                          <button type="button" onClick={() => removeContactExtra(index)} aria-label="Remover campo"><Icon name="close" /></button>
                         </div>
                       ))}
                       <button type="button" className="inbox-contact-extra-add" onClick={addContactExtra}>+ Adicionar campo</button>
@@ -1406,7 +1407,7 @@ export function InboxPage({
               </section>
 
               <section className="inbox-insight-card">
-                <span className="inbox-insight-icon" aria-hidden="true">✦</span>
+                <span className="inbox-insight-icon" aria-hidden="true"><Icon name="activity" /></span>
                 <div>
                   <strong>{selectedConversation.status === 'ia' ? 'IA conduzindo o atendimento' : selectedConversation.status === 'closed' ? 'Atendimento encerrado' : 'Atendimento em andamento'}</strong>
                   <p>{selectedConversation.status === 'ia' ? 'O assistente virtual está acompanhando esta conversa.' : selectedConversation.status === 'closed' ? 'Este ticket não aceita novas mensagens até ser reaberto.' : 'A equipe pode acompanhar e responder este cliente em tempo real.'}</p>

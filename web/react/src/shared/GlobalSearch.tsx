@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { normalizeConversation } from '../features/inbox'
+import { Icon } from './icons'
 import './GlobalSearch.css'
 
 type SearchKind = 'conversation' | 'contact' | 'agent'
@@ -221,7 +222,7 @@ export function GlobalSearch({
     >
       <section className="gs-panel" role="dialog" aria-modal="true" aria-label="Busca global">
         <div className="gs-input-row">
-          <span className="gs-input-icon" aria-hidden="true">⌕</span>
+          <span className="gs-input-icon" aria-hidden="true"><Icon name="search" /></span>
           <input
             ref={inputRef}
             className="gs-input"
@@ -233,7 +234,7 @@ export function GlobalSearch({
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <button className="gs-close" type="button" onClick={onClose} aria-label="Fechar busca">×</button>
+          <button className="gs-close" type="button" onClick={onClose} aria-label="Fechar busca"><Icon name="close" /></button>
         </div>
 
         <div className="gs-body">
@@ -245,7 +246,7 @@ export function GlobalSearch({
           )}
           {showEmpty && (
             <div className="gs-empty" role="status">
-              <span aria-hidden="true">⌕</span>
+              <span aria-hidden="true"><Icon name="search" /></span>
               <strong>Nenhum resultado</strong>
               <small>Não encontramos nada para “{term}”.</small>
             </div>
@@ -264,13 +265,13 @@ export function GlobalSearch({
                     onClick={() => select(entry)}
                   >
                     <span className={`gs-item-icon gs-item-icon--${entry.kind}`} aria-hidden="true">
-                      {entry.kind === 'conversation' ? '▣' : entry.kind === 'contact' ? '◎' : '✦'}
+                      <Icon name={entry.kind === 'conversation' ? 'inbox' : entry.kind === 'contact' ? 'contacts' : 'agents'} />
                     </span>
                     <span className="gs-item-copy">
                       <strong>{entry.title}</strong>
                       {entry.subtitle && <small>{entry.subtitle}</small>}
                     </span>
-                    <span className="gs-item-go" aria-hidden="true">↵</span>
+                    <span className="gs-item-go" aria-hidden="true"><Icon name="corner-down-left" /></span>
                   </button>
                 )
               })}

@@ -25,24 +25,24 @@ tem sempre todas (`userHasPerm` faz curto-circuito, `perms.go:176`).
 
 | Área (permissão) | super_admin | admin | supervisor | atendente |
 |---|:--:|:--:|:--:|:--:|
-| Conversas (`conversas_*`, `conversas_ver_ia`) | ✔ | ✔ | ✔ | ✔ |
-| Contatos (`contatos_gerenciar`) | ✔ | ✔ | ✔ | ✔ |
-| Respostas rápidas (`respostas_gerenciar`) | ✔ | ✔ | ✔ | ✔ |
-| Assinatura (`enviar_assinatura`) | ✔ | ✔ | ✔ | ✔ |
-| Agentes de IA (`agentes_gerenciar`) | ✔ | ✔ | ✔ | ✘ |
-| Aprendizado (`aprendizado_ver`) | ✔ | ✔ | ✔ | ✘ |
-| Setores (`setores_gerenciar`) | ✔ | ✔ | ✔ | ✘ |
-| Campanhas (`campanhas_*`, `grupos_canais_gerenciar`) | ✔ | ✔ | ✔ | ✘ |
-| Relatórios (`relatorios_ver`) | ✔ | ✔ | ✔ | ✘ |
-| Mensagens padrão (`mensagens_gerenciar`) | ✔ | ✔ | ✔ | ✘ |
-| **Provedores de IA** (`ias_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| Chaves de API/webhooks (`integracoes_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| Chat flow (`chatflows_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| Canais (`canais_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| Equipe (`equipe_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| Configurações/Logs/LGPD (`config_gerenciar`, `logs_ver`) | ✔ | ✔ | ✘ | ✘ |
-| Agendamentos (`agendamentos_gerenciar`) | ✔ | ✔ | ✘ | ✘ |
-| **Plataforma** (`plataforma_gerenciar`) | ✔ | ✘ | ✘ | ✘ |
+| Conversas (`conversas_*`, `conversas_ver_ia`) | Sim | Sim | Sim | Sim |
+| Contatos (`contatos_gerenciar`) | Sim | Sim | Sim | Sim |
+| Respostas rápidas (`respostas_gerenciar`) | Sim | Sim | Sim | Sim |
+| Assinatura (`enviar_assinatura`) | Sim | Sim | Sim | Sim |
+| Agentes de IA (`agentes_gerenciar`) | Sim | Sim | Sim | Não |
+| Aprendizado (`aprendizado_ver`) | Sim | Sim | Sim | Não |
+| Setores (`setores_gerenciar`) | Sim | Sim | Sim | Não |
+| Campanhas (`campanhas_*`, `grupos_canais_gerenciar`) | Sim | Sim | Sim | Não |
+| Relatórios (`relatorios_ver`) | Sim | Sim | Sim | Não |
+| Mensagens padrão (`mensagens_gerenciar`) | Sim | Sim | Sim | Não |
+| **Provedores de IA** (`ias_gerenciar`) | Sim | Sim | Não | Não |
+| Chaves de API/webhooks (`integracoes_gerenciar`) | Sim | Sim | Não | Não |
+| Chat flow (`chatflows_gerenciar`) | Sim | Sim | Não | Não |
+| Canais (`canais_gerenciar`) | Sim | Sim | Não | Não |
+| Equipe (`equipe_gerenciar`) | Sim | Sim | Não | Não |
+| Configurações/Logs/LGPD (`config_gerenciar`, `logs_ver`) | Sim | Sim | Não | Não |
+| Agendamentos (`agendamentos_gerenciar`) | Sim | Sim | Não | Não |
+| **Plataforma** (`plataforma_gerenciar`) | Sim | Não | Não | Não |
 
 Resumo: **admin = tudo da empresa, menos Plataforma**; **supervisor = operação**
 (setores, agentes, campanhas, relatórios) **sem** provedores/canais/config;

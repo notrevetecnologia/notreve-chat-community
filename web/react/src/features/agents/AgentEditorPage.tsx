@@ -7,6 +7,7 @@ import {
   AgentSkillsTab,
   AgentToolsTab,
 } from "./AgentTabs";
+import { Icon } from '../../shared/icons'
 import {
   draftFromAgent,
   draftToBody,
@@ -143,7 +144,7 @@ export function AgentEditorPage({
           onClick={onBack}
           aria-label="Voltar para a lista de agentes"
         >
-          ←
+          <Icon name="arrow-left" />
         </button>
         <div className="agent-screen-title">
           <span className="eyebrow">
@@ -168,27 +169,27 @@ export function AgentEditorPage({
 
       {error && (
         <div className="agents-alert" role="alert">
-          <span>!</span>
+          <span><Icon name="alert-circle" /></span>
           {error}
           <button
             type="button"
             onClick={() => setError(null)}
             aria-label="Fechar aviso"
           >
-            ×
+            <Icon name="close" />
           </button>
         </div>
       )}
       {notice && (
         <div className="agent-notice" role="status">
-          <span>✓</span>
+          <span><Icon name="check" /></span>
           {notice}
           <button
             type="button"
             onClick={() => setNotice(null)}
             aria-label="Fechar aviso"
           >
-            ×
+            <Icon name="close" />
           </button>
         </div>
       )}

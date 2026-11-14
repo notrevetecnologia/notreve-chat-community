@@ -24,7 +24,7 @@ func TestParseSatisfactionRating(t *testing.T) {
 		"5":         5,
 		"nota 4":    4,
 		"3/5":       3,
-		"⭐⭐":        2,
+		"\u2b50\u2b50": 2,
 		"excelente": 5,
 		"ruim":      2,
 	}

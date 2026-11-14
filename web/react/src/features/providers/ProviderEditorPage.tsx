@@ -8,6 +8,7 @@ import {
   type ProviderModelResponse,
   type ProviderTestResult,
 } from './providersShared'
+import { Icon } from '../../shared/icons'
 import { LINKS } from '../../shared/links'
 import './Providers.css'
 
@@ -109,8 +110,8 @@ export function ProviderEditorPage({
       tabs={tabs}
       activeTab={tab}
       onTabChange={(key) => setTab(key as TabKey)}
-      alert={probeError ? <div className="entity-alert" role="alert"><span>!</span><p>{probeError}</p><button type="button" onClick={() => setProbeError(null)} aria-label="Fechar aviso">×</button></div> : undefined}
-      notice={probeNotice ? <div className="entity-notice" role="status"><span>✓</span><p>{probeNotice}</p><button type="button" onClick={() => setProbeNotice(null)} aria-label="Fechar aviso">×</button></div> : undefined}
+      alert={probeError ? <div className="entity-alert" role="alert"><span>!</span><p>{probeError}</p><button type="button" onClick={() => setProbeError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div> : undefined}
+      notice={probeNotice ? <div className="entity-notice" role="status"><span><Icon name="check" /></span><p>{probeNotice}</p><button type="button" onClick={() => setProbeNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div> : undefined}
     >
       {tab === 'conexao' && (
         <div className="entity-tab-body">

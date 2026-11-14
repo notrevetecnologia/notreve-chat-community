@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import './Plans.css'
 import { createPlan, deletePlan, loadPlans, loadTenantPlan, saveTenantPlan, updatePlan } from './plansApi'
 import type { EffectiveLimits, PlanDraft, Plano, PlanoRecurso, TenantPlanAssignment } from './types'
+import { Icon } from '../../shared/icons'
 
 type Tenant = { id: number; name: string; slug: string; status: string }
 
@@ -202,8 +203,8 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
           <p>Defina quais recursos cada plano franqueia e, quando necessário, sobrescreva um limite para uma empresa específica.</p>
         </div>
         <div className="intro-actions">
-          {onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}
-          <button className="secondary-button" type="button" onClick={() => void load()}>↻ Atualizar</button>
+          {onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}
+          <button className="secondary-button" type="button" onClick={() => void load()}><Icon name="refresh" /> Atualizar</button>
         </div>
       </section>
 
@@ -218,11 +219,11 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
             </div>
             <div className="plans-split">
               <div className="plans-list">
-                {plans.length === 0 ? <div className="workspace-empty"><span>▦</span><strong>Nenhum plano</strong><p>Crie o primeiro plano para começar a franquear recursos.</p></div> : plans.map((plan) => (
+                {plans.length === 0 ? <div className="workspace-empty"><span><Icon name="plans" /></span><strong>Nenhum plano</strong><p>Crie o primeiro plano para começar a franquear recursos.</p></div> : plans.map((plan) => (
                   <button className={`plan-row${editingPlanID === plan.id ? ' active' : ''}`} type="button" key={plan.id} onClick={() => editPlan(plan)}>
                     <span className="plan-row-copy"><strong>{plan.nome}</strong><small>{plan.intervalo} · {formatMoney(plan.preco)} · {(plan.recursos ?? []).length} recursos</small></span>
                     <span className={`status-badge ${plan.ativo ? 'status-active' : 'status-disabled'}`}>{plan.ativo ? 'Ativo' : 'Inativo'}</span>
-                    <span className="row-action">{editingPlanID === plan.id ? 'Editando' : 'Editar'} →</span>
+                    <span className="row-action">{editingPlanID === plan.id ? 'Editando' : 'Editar'} <Icon name="arrow-right" /></span>
                   </button>
                 ))}
               </div>
@@ -239,13 +240,13 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
                     <div className="recurso-row" key={index}>
                       <span className="recurso-label">{resourceLabel(recurso.recurso)}</span>
                       <input type="number" min="0" step="1" value={recurso.limite} onChange={(event) => changeResource(index, 'limite', Number(event.target.value) || 0)} />
-                      <button className="recurso-remove" type="button" onClick={() => removeResource(index)} aria-label="Remover recurso">×</button>
+                      <button className="recurso-remove" type="button" onClick={() => removeResource(index)} aria-label="Remover recurso"><Icon name="close" /></button>
                     </div>
                   ))}</div>
                   <button className="secondary-button" type="button" onClick={addResource}>+ Adicionar recurso</button>
                 </div>
                 <div className="form-actions" style={{ marginTop: 16 }}>
-                  <button className="primary-button" type="button" disabled={saving} onClick={() => void savePlan()}>{saving ? 'Salvando…' : editingPlanID === null ? 'Criar plano ↗' : 'Salvar plano ↗'}</button>
+                  <button className="primary-button" type="button" disabled={saving} onClick={() => void savePlan()}>{saving ? 'Salvando…' : <>{editingPlanID === null ? 'Criar plano' : 'Salvar plano'} <Icon name="send" /></>}</button>
                   {editingPlanID !== null && <button className="secondary-button" type="button" onClick={() => { setEditingPlanID(null); setPlanDraft(emptyPlanDraft()) }}>Cancelar edição</button>}
                 </div>
               </div>
@@ -260,7 +261,7 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
                 {effective && selectedTenantName && <div className="tenant-plan-summary"><span className="tenant-initial">{(selectedTenantName.name || 'N').slice(0, 1).toUpperCase()}</span><span className="plan-row-copy"><strong>{effective.plano_nome || 'Sem plano contratado'}</strong><small>{effective.status === 'trial' ? 'Em teste' : effective.status === 'suspended' ? 'Suspensa' : 'Ativa'}{effective.trial_until ? ` · teste até ${formatDate(effective.trial_until)}` : ''}</small></span></div>}
               </div>
               <div className="plans-form">
-                {selectedTenant === null ? <div className="workspace-empty"><span>◈</span><strong>Escolha uma empresa</strong><p>Selecione uma empresa para consultar e editar os limites efetivos.</p></div> : <div className="plans-assignment">
+                {selectedTenant === null ? <div className="workspace-empty"><span><Icon name="tenants" /></span><strong>Escolha uma empresa</strong><p>Selecione uma empresa para consultar e editar os limites efetivos.</p></div> : <div className="plans-assignment">
                   <div className="plans-form-grid">
                     <label className="field"><span>Plano contratado</span><select value={tenantDraft.plano_id ?? ''} onChange={(event) => { setTenantDraft((current) => ({ ...current, plano_id: event.target.value ? Number(event.target.value) : null })); setDirty(true) }}><option value="">Sem plano (padrão)</option>{plans.filter((plan) => plan.ativo).map((plan) => <option key={plan.id} value={plan.id}>{plan.nome}</option>)}</select></label>
                     <label className="field"><span>Status da empresa</span><select value={tenantDraft.status} onChange={(event) => { setTenantDraft((current) => ({ ...current, status: event.target.value })); setDirty(true) }}><option value="active">Ativa</option><option value="trial">Em teste</option><option value="suspended">Suspensa</option><option value="closed">Encerrada</option></select></label>
@@ -268,12 +269,12 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
                   </div>
                   <div className="form-subsection"><div><strong>Sobrescrever limite</strong><p>Valores maiores que 0 sobrescrevem a franquia do plano para esta empresa. Remova para voltar ao plano.</p></div>
                     <div className="plans-recursos">{Object.keys(tenantDraft.limits_override).length === 0 ? <span className="plans-hint">Sem override. A empresa segue o plano contratado.</span> : Object.entries(tenantDraft.limits_override).map(([key, value]) => (
-                      <div className="recurso-row" key={key}><span className="recurso-label">{resourceLabel(key)}</span><input type="number" min="0" step="1" value={value} onChange={(event) => changeOverride(key, event.target.value)} /><button className="recurso-remove" type="button" onClick={() => changeOverride(key, '')} aria-label="Remover override">×</button></div>
+                      <div className="recurso-row" key={key}><span className="recurso-label">{resourceLabel(key)}</span><input type="number" min="0" step="1" value={value} onChange={(event) => changeOverride(key, event.target.value)} /><button className="recurso-remove" type="button" onClick={() => changeOverride(key, '')} aria-label="Remover override"><Icon name="close" /></button></div>
                     ))}</div>
                     <div className="plans-override-add"><select value="" onChange={(event) => { if (event.target.value) changeOverride(event.target.value, '1') }}><option value="">Adicionar override…</option>{resourceKeys.filter(([key]) => !(key in tenantDraft.limits_override)).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div>
                   </div>
                   {effective && <div className="form-subsection"><div><strong>Limites efetivos</strong><p>Resultado do plano + override. Mostra o limite e o consumo atual.</p></div><div className="plans-recursos">{Object.entries(effective.recursos).map(([key, max]) => { const uso = effective.uso[key] ?? 0; return <div className="plans-recursos-efetivos" key={key}><span>{resourceLabel(key)}</span><span>{uso} / {max === 0 ? 'ilimitado' : max}</span></div> })}</div></div>}
-                  <div className="form-actions" style={{ marginTop: 16 }}><button className="primary-button" type="button" disabled={saving || !dirty} onClick={() => void saveAssignment()}>{saving ? 'Salvando…' : 'Salvar plano e limites ↗'}</button></div>
+                  <div className="form-actions" style={{ marginTop: 16 }}><button className="primary-button" type="button" disabled={saving || !dirty} onClick={() => void saveAssignment()}>{saving ? 'Salvando…' : <>{'Salvar plano e limites'} <Icon name="send" /></>}</button></div>
                 </div>}
               </div>
             </div>
@@ -285,7 +286,7 @@ export default function PlansPage({ onBack }: { onBack?: () => void }) {
 }
 
 function Alert({ kind, text, onClose }: { kind: 'alert' | 'notice'; text: string; onClose: () => void }) {
-  return <div className={`workspace-${kind}`} role={kind === 'alert' ? 'alert' : 'status'}><span>{kind === 'alert' ? '!' : '✓'}</span>{text}<button type="button" onClick={onClose} aria-label="Fechar aviso">×</button></div>
+  return <div className={`workspace-${kind}`} role={kind === 'alert' ? 'alert' : 'status'}><span>{kind === 'alert' ? <Icon name="alert-circle" /> : <Icon name="check" />}</span>{text}<button type="button" onClick={onClose} aria-label="Fechar aviso"><Icon name="close" /></button></div>
 }
 
 function formatMoney(value: number) {

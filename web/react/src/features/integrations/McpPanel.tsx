@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Modal } from '../../shared/Modal'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
+import { Icon } from '../../shared/icons'
 
 type McpTool = { id: number; name: string; display_name: string; description: string; ativa: boolean }
 type McpServer = {
@@ -179,8 +180,8 @@ export function McpPanel({ canManage = true }: { canManage?: boolean }) {
     </div>
     <p className="integrations-access-copy">Conecte servidores MCP (stdio ou HTTP/SSE) para expor tools externas aos seus agentes. Depois de cadastrar, clique em <strong>Sincronizar</strong> para importar as tools.</p>
 
-    {error && <div className="integrations-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
-    {notice && <div className="integrations-notice" role="status"><span>✓</span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="integrations-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+    {notice && <div className="integrations-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
     <FilterBar resultLabel={`${total} servidor${total === 1 ? '' : 'es'}`} onReset={() => { setQuery(''); setStatus('') }}>
       <FilterSearch value={query} onChange={setQuery} placeholder="Buscar servidor, comando ou URL" />

@@ -121,13 +121,13 @@
   desligada por padrão). Quando ligada, a plataforma detecta um provável outro
   bot por **padrão de texto** (lista editável `bot_patterns`) ou **rajada**
   (6+ mensagens em 60s) e **transfere a conversa para atendimento humano** com a
-  nota "⚠️ Possível bot detectado" — em vez de a IA responder a outro bot. Não
+  nota "Possível bot detectado" — em vez de a IA responder a outro bot. Não
   encerra (evita loop de "encerrar → bot responde de novo").
 - Opt-in: com a configuração desligada, o comportamento do atendimento livre
   permanece idêntico. Migration `048_bot_detection.sql`.
 - **Estado `bot_blocked`** (migration 049): ao detectar, a conversa é **marcada
   como bloqueada** e novas mensagens são **ignoradas** (sem gastar a fila humana
-  nem a IA) até um atendente **desbloquear** no Inbox (badge "🤖 Bot suspeito" +
+  nem a IA) até um atendente **desbloquear** no Inbox (badge "Bot suspeito" +
   botão "Desbloquear bot"). Padrões padrão conservadores aplicados quando a lista
   está vazia.
 - `go build`, `go vet`, `go test ./...` e `npm run build` passaram.

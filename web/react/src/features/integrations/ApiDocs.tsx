@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './ApiDocs.css'
+import { Icon } from '../../shared/icons'
 
 type DocEnvelope<T> = { data?: T; error?: { message?: string } }
 type Scope = { scope: string; what: string }
@@ -45,7 +46,7 @@ export function ApiDocsPanel({ onBack }: { onBack: () => void }) {
   return <section className="api-docs">
     <div className="integrations-section-heading">
       <div><span className="eyebrow">Para desenvolvedores</span><h3>Documentação da API</h3><p>Guia de integração para o seu ERP, site ou automação. Tudo roda dentro da sua empresa (tenant) — a chave nunca acessa dados de outra.</p></div>
-      <button className="secondary-button" type="button" onClick={onBack}>← Voltar</button>
+      <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Voltar</button>
     </div>
     <div className="api-docs-tabs">
       {([['intro', 'Introdução'], ['auth', 'Autenticação'], ['endpoints', 'Endpoints'], ['webhooks', 'Webhooks'], ['errors', 'Erros e limites']] as const).map(([key, label]) => <button key={key} className={`api-docs-tab ${tab === key ? 'is-active' : ''}`} type="button" onClick={() => setTab(key)}>{label}</button>)}

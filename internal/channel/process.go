@@ -430,7 +430,7 @@ func (p *Processor) findOrCreateConversation(ctx context.Context, in Inbound, ag
 			if !reused {
 				_ = p.addMessage(ctx, in.TenantID, store.Message{
 					ConversationID: conversationID, Role: "system", Source: "system",
-					Content: "🔖 Protocolo de atendimento " + ticketLabel(conversationID) + " aberto",
+					Content: "Protocolo de atendimento " + ticketLabel(conversationID) + " aberto",
 				})
 			}
 			return conversationID, !reused, nil
@@ -474,7 +474,7 @@ func (p *Processor) findOrCreateConversation(ctx context.Context, in Inbound, ag
 	if err == nil {
 		_ = p.addMessage(ctx, in.TenantID, store.Message{
 			ConversationID: createdID, Role: "system", Source: "system",
-			Content: "🔖 Protocolo de atendimento " + ticketLabel(createdID) + " aberto",
+			Content: "Protocolo de atendimento " + ticketLabel(createdID) + " aberto",
 		})
 	}
 	return createdID, err == nil, err
@@ -498,7 +498,7 @@ func ticketLabel(id int) string {
 }
 
 func (p *Processor) fallbackReply(ctx context.Context) agent.Reply {
-	return agent.Reply{Text: "Não consegui concluir essa resposta agora. Pode repetir sua última mensagem? Vou continuar o atendimento por aqui. 😊", RecordLearning: true}
+	return agent.Reply{Text: "Não consegui concluir essa resposta agora. Pode repetir sua última mensagem? Vou continuar o atendimento por aqui.", RecordLearning: true}
 }
 
 func (p *Processor) noAgentReply() agent.Reply {
@@ -616,7 +616,7 @@ func BeginSatisfaction(ctx context.Context, st *store.Store, conversationID int)
 	if err != nil {
 		return "", err
 	}
-	text := "Atendimento encerrado. Quando precisar, é só iniciar um novo atendimento. 😊"
+	text := "Atendimento encerrado. Quando precisar, é só iniciar um novo atendimento."
 	state := "finalizada"
 	if hasAI || hasHuman {
 		text = SatisfactionQuestion(ctx, st, satisfactionTarget(hasAI, hasHuman))
@@ -667,10 +667,10 @@ func isEndConversationRequest(text string) bool {
 
 func SatisfactionQuestion(ctx context.Context, st *store.Store, target string) string {
 	key := "satisfacao_ia"
-	text := "De 1 a 5, como você avalia o atendimento da nossa assistente virtual? Responda apenas com um número (1 = péssimo, 5 = excelente). 😊"
+	text := "De 1 a 5, como você avalia o atendimento da nossa assistente virtual? Responda apenas com um número (1 = péssimo, 5 = excelente)."
 	if target == "operador" {
 		key = "satisfacao_operador"
-		text = "De 1 a 5, como você avalia o atendimento do nosso atendente? Responda apenas com um número (1 = péssimo, 5 = excelente). 😊"
+		text = "De 1 a 5, como você avalia o atendimento do nosso atendente? Responda apenas com um número (1 = péssimo, 5 = excelente)."
 	}
 	if message, err := st.GetMensagemByChave(ctx, key); err == nil && strings.TrimSpace(message.Texto) != "" {
 		return strings.TrimSpace(message.Texto)
@@ -720,7 +720,7 @@ func (p *Processor) botDetected(ctx context.Context, in Inbound, convID int) boo
 // Um atendente pode desbloquear no Inbox, voltando a conversa ao fluxo normal.
 func (p *Processor) blockBot(ctx context.Context, convID int) {
 	_ = p.st.SetConversationBotBlocked(ctx, convID, true)
-	_ = p.st.AddMessage(ctx, store.Message{ConversationID: convID, Role: "system", Source: "system", Content: "⚠️ Possível bot detectado — conversa marcada como bloqueada. Desbloqueie no Inbox se for um cliente real."})
+	_ = p.st.AddMessage(ctx, store.Message{ConversationID: convID, Role: "system", Source: "system", Content: "Possível bot detectado — conversa marcada como bloqueada. Desbloqueie no Inbox se for um cliente real."})
 }
 
 // botPatterns normaliza a lista editável de padrões (uma por linha ou vírgula).

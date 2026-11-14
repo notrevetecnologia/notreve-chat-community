@@ -79,7 +79,7 @@ export const defaultWidget: WidgetConfig = {
   cor_fundo: '#f4f6f8',
   cor_texto: '#ffffff',
   cor_texto_botao: '#ffffff',
-  icone_botao: '💬',
+  icone_botao: '',
   largura: 360,
   texto_input: 'Digite sua mensagem...',
   texto_rodape: 'Atendimento',

@@ -218,7 +218,7 @@ func (s *Store) ListWaitingConversations(ctx context.Context, minAgeMinutes, coo
 	) AND NOT EXISTS (
 		SELECT 1 FROM messages pm
 		WHERE pm.tenant_id=c.tenant_id AND pm.conversation_id=c.id AND pm.source='system'
-		  AND pm.content LIKE '🤖 %' AND pm.created_at > now() - make_interval(mins => $3)
+		  AND pm.content LIKE '[Bot] %' AND pm.created_at > now() - make_interval(mins => $3)
 	) ORDER BY c.updated_at ASC`
 	rows, err := s.pool.Query(ctx, query, tenantID, minAgeMinutes, cooldownMinutes)
 	if err != nil {

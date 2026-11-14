@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Icon } from './icons'
 import './ListControls.css'
 
 export type PaginationMeta = {
@@ -40,11 +41,11 @@ export function Pagination({
       </span>
       <div className="list-pagination-controls">
         <button type="button" onClick={() => onOffsetChange(Math.max(0, offset - safeLimit))} disabled={loading || offset <= 0}>
-          ← Anterior
+          <Icon name="arrow-left" /> Anterior
         </button>
         <span className="list-pagination-page">Página {currentPage} de {totalPages}</span>
         <button type="button" onClick={() => onOffsetChange(offset + safeLimit)} disabled={loading || to >= total}>
-          Próxima →
+          Próxima <Icon name="arrow-right" />
         </button>
       </div>
     </nav>
@@ -84,7 +85,7 @@ export function FilterSearch({
 }) {
   return (
     <label className="list-filter-search">
-      <span aria-hidden="true">⌕</span>
+      <span aria-hidden="true"><Icon name="search" /></span>
       <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder || 'Buscar…'} />
     </label>
   )

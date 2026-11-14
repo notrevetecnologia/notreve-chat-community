@@ -1,5 +1,6 @@
 import { Children, useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Pagination, DEFAULT_PAGE_SIZE, encodeCursor } from '../../shared/Pagination'
+import { Icon, type IconName } from '../../shared/icons'
 import './Reports.css'
 
 type Period = '1' | '7' | '30' | 'custom'
@@ -150,7 +151,7 @@ export function ReportsPage({ onBack, permissions = null }: { onBack?: () => voi
   return <div className="reports-page">
     <section className="reports-intro">
       <div><span className="eyebrow">Inteligência da operação</span><h2>Decisões com contexto.</h2><p>Acompanhe o volume do atendimento, a experiência do cliente e o desempenho de cada equipe em um só lugar.</p></div>
-      <div className="reports-intro-actions">{onBack && <button className="secondary-button" type="button" onClick={onBack}>← Visão geral</button>}<button className="secondary-button" type="button" onClick={() => void load()} disabled={loading}>↻ Atualizar</button>{canExport && <a className={`primary-button reports-export${exportReady ? '' : ' is-disabled'}`} href={exportReady ? exportHref : undefined} aria-disabled={!exportReady} download onClick={(event) => { if (!exportReady) event.preventDefault() }}>⇩ Exportar CSV</a>}</div>
+      <div className="reports-intro-actions">{onBack && <button className="secondary-button" type="button" onClick={onBack}><Icon name="arrow-left" /> Visão geral</button>}<button className="secondary-button" type="button" onClick={() => void load()} disabled={loading}><Icon name="refresh" /> Atualizar</button>{canExport && <a className={`primary-button reports-export${exportReady ? '' : ' is-disabled'}`} href={exportReady ? exportHref : undefined} aria-disabled={!exportReady} download onClick={(event) => { if (!exportReady) event.preventDefault() }}><Icon name="download" /> Exportar CSV</a>}</div>
     </section>
 
     <form className="reports-filters" onSubmit={applyFilters}>
@@ -159,37 +160,37 @@ export function ReportsPage({ onBack, permissions = null }: { onBack?: () => voi
       <label><span>Canal</span><select value={draft.channel} onChange={(event) => updateDraft('channel', event.target.value)}><option value="">Todos os canais</option><option value="whatsapp">WhatsApp</option><option value="webchat">Webchat</option><option value="telegram">Telegram</option></select></label>
       <label><span>Setor</span><select value={draft.sectorID} onChange={(event) => updateDraft('sectorID', event.target.value)}><option value="">Todos os setores</option>{data.options.sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.name}</option>)}</select></label>
       <label><span>Atendente</span><select value={draft.attendantID} onChange={(event) => updateDraft('attendantID', event.target.value)}><option value="">Toda a equipe</option>{data.options.attendants.map((attendant) => <option key={attendant.id} value={attendant.id}>{attendant.name}</option>)}</select></label>
-      <button className="primary-button" type="submit">Aplicar filtros <span>↗</span></button>
+      <button className="primary-button" type="submit">Aplicar filtros <Icon name="send" /></button>
     </form>
 
-    {error && <div className="reports-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso">×</button></div>}
+    {error && <div className="reports-alert" role="alert"><span><Icon name="alert-circle" /></span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
     {loading && !reports ? <div className="reports-state"><span className="reports-spinner" /> Carregando visão analítica…</div> : <>
       <section className="reports-kpis">
-        <MetricCard icon="◌" tone="blue" label="Conversas" value={formatNumber(data.summary.conversations)} detail={`${formatNumber(data.summary.active)} ativas · ${formatNumber(data.summary.closed)} encerradas`} />
-        <MetricCard icon="✉" tone="violet" label="Mensagens" value={formatNumber(data.summary.messages)} detail={`${formatNumber(data.summary.customer_messages)} cliente · ${formatNumber(data.summary.human_messages)} equipe`} />
-        <MetricCard icon="★" tone="amber" label="Nota geral" value={formatRating(data.summary.overall_rating, data.summary.overall_rating_count)} detail={`${formatNumber(data.summary.evaluated_conversations)} atendimentos avaliados`} featured />
-        <MetricCard icon="✦" tone="green" label="Assistente IA" value={formatRating(data.summary.ai_rating, data.summary.ai_rating_count)} detail={`${formatNumber(data.summary.ai_rating_count)} notas da IA`} />
-        <MetricCard icon="♧" tone="teal" label="Equipe humana" value={formatRating(data.summary.human_rating, data.summary.human_rating_count)} detail={`${formatNumber(data.summary.human_rating_count)} notas do operador`} />
+        <MetricCard icon="inbox" tone="blue" label="Conversas" value={formatNumber(data.summary.conversations)} detail={`${formatNumber(data.summary.active)} ativas · ${formatNumber(data.summary.closed)} encerradas`} />
+        <MetricCard icon="mail" tone="violet" label="Mensagens" value={formatNumber(data.summary.messages)} detail={`${formatNumber(data.summary.customer_messages)} cliente · ${formatNumber(data.summary.human_messages)} equipe`} />
+        <MetricCard icon="star" tone="amber" label="Nota geral" value={formatRating(data.summary.overall_rating, data.summary.overall_rating_count)} detail={`${formatNumber(data.summary.evaluated_conversations)} atendimentos avaliados`} featured />
+        <MetricCard icon="bot" tone="green" label="Assistente IA" value={formatRating(data.summary.ai_rating, data.summary.ai_rating_count)} detail={`${formatNumber(data.summary.ai_rating_count)} notas da IA`} />
+        <MetricCard icon="users" tone="teal" label="Equipe humana" value={formatRating(data.summary.human_rating, data.summary.human_rating_count)} detail={`${formatNumber(data.summary.human_rating_count)} notas do operador`} />
       </section>
 
       <section className="reports-kpis">
-        <MetricCard icon="⌛" tone="blue" label="Tempo médio de resposta" value={formatDuration(data.summary.avg_response_time)} detail={data.summary.avg_response_time_count > 0 ? `Primeira resposta em ${formatNumber(data.summary.avg_response_time_count)} atendimentos` : 'Sem respostas medidas no período'} />
-        <MetricCard icon="⇄" tone="violet" label="Transferência p/ humano" value={formatPercent(data.summary.transfer_rate)} detail={`${formatNumber(data.summary.transferred_count)} conversas transferidas`} />
-        <MetricCard icon="◉" tone="green" label="NPS" value={formatNPS(data.summary.nps)} detail={`${formatNumber(data.summary.nps_promoters)} promotores · ${formatNumber(data.summary.nps_detractors)} detratores`} />
-        <MetricCard icon="⏳" tone="amber" label="Abandono de fila" value={formatPercent(data.summary.queue_abandonment_rate)} detail={`${formatNumber(data.summary.queue_abandonment_count)} conversas abandonadas`} />
+        <MetricCard icon="clock" tone="blue" label="Tempo médio de resposta" value={formatDuration(data.summary.avg_response_time)} detail={data.summary.avg_response_time_count > 0 ? `Primeira resposta em ${formatNumber(data.summary.avg_response_time_count)} atendimentos` : 'Sem respostas medidas no período'} />
+        <MetricCard icon="arrow-left-right" tone="violet" label="Transferência p/ humano" value={formatPercent(data.summary.transfer_rate)} detail={`${formatNumber(data.summary.transferred_count)} conversas transferidas`} />
+        <MetricCard icon="target" tone="green" label="NPS" value={formatNPS(data.summary.nps)} detail={`${formatNumber(data.summary.nps_promoters)} promotores · ${formatNumber(data.summary.nps_detractors)} detratores`} />
+        <MetricCard icon="alert-triangle" tone="amber" label="Abandono de fila" value={formatPercent(data.summary.queue_abandonment_rate)} detail={`${formatNumber(data.summary.queue_abandonment_count)} conversas abandonadas`} />
       </section>
 
       <section className="reports-kpis">
-        <MetricCard icon="◔" tone="teal" label="Tempo médio de espera" value={formatDuration(data.summary.avg_wait_time)} detail={data.summary.avg_wait_time_count > 0 ? `Espera por humano em ${formatNumber(data.summary.avg_wait_time_count)} atendimentos` : 'Sem espera humana medida'} />
-        <MetricCard icon="◕" tone="teal" label="Tempo médio de atendimento" value={formatDuration(data.summary.avg_handling_time)} detail={data.summary.avg_handling_time_count > 0 ? `${formatNumber(data.summary.avg_handling_time_count)} atendimentos humanos` : 'Sem atendimento humano medido'} />
-        <MetricCard icon="☺" tone="green" label="CSAT" value={formatPercent(data.summary.csat)} detail={`${formatNumber(data.summary.csat_satisfied)} de ${formatNumber(data.summary.csat_count)} notas ≥ 4`} />
-        <MetricCard icon="✓" tone="blue" label="Taxa de encerramento" value={formatPercent(data.summary.resolution_rate)} detail={`${formatNumber(data.summary.resolved_count)} de ${formatNumber(data.summary.conversations)} conversas encerradas`} />
-        <MetricCard icon="⚙" tone="violet" label="Resolução pela IA" value={formatPercent(data.summary.ai_resolution_rate)} detail={`${formatNumber(data.summary.ai_resolved_count)} IA · ${formatNumber(data.summary.human_resolved_count)} humano`} />
+        <MetricCard icon="clock" tone="teal" label="Tempo médio de espera" value={formatDuration(data.summary.avg_wait_time)} detail={data.summary.avg_wait_time_count > 0 ? `Espera por humano em ${formatNumber(data.summary.avg_wait_time_count)} atendimentos` : 'Sem espera humana medida'} />
+        <MetricCard icon="activity" tone="teal" label="Tempo médio de atendimento" value={formatDuration(data.summary.avg_handling_time)} detail={data.summary.avg_handling_time_count > 0 ? `${formatNumber(data.summary.avg_handling_time_count)} atendimentos humanos` : 'Sem atendimento humano medido'} />
+        <MetricCard icon="smile" tone="green" label="CSAT" value={formatPercent(data.summary.csat)} detail={`${formatNumber(data.summary.csat_satisfied)} de ${formatNumber(data.summary.csat_count)} notas ≥ 4`} />
+        <MetricCard icon="check" tone="blue" label="Taxa de encerramento" value={formatPercent(data.summary.resolution_rate)} detail={`${formatNumber(data.summary.resolved_count)} de ${formatNumber(data.summary.conversations)} conversas encerradas`} />
+        <MetricCard icon="bot" tone="violet" label="Resolução pela IA" value={formatPercent(data.summary.ai_resolution_rate)} detail={`${formatNumber(data.summary.ai_resolved_count)} IA · ${formatNumber(data.summary.human_resolved_count)} humano`} />
       </section>
 
       <section className="reports-main-grid">
         <article className="reports-panel reports-panel--chart"><PanelHeading eyebrow="Ritmo da operação" title="Volume por dia" description="Conversas abertas, mensagens trocadas e avaliações recebidas." /><div className="reports-chart-legend"><span><i className="is-conversations" />Conversas</span><span><i className="is-messages" />Mensagens</span><span><i className="is-evaluations" />Avaliações</span></div><div className="reports-chart" aria-label="Gráfico de volume por dia">{data.daily.map((day) => <div className="reports-chart-column" key={day.date} title={`${day.label}: ${day.conversations} conversas, ${day.messages} mensagens`}><div className="reports-chart-values"><b>{day.conversations}</b><b>{day.messages}</b></div><div className="reports-chart-bars"><i className="is-conversations" style={{ height: `${Math.max(day.conversations / maxDailyValue * 100, day.conversations ? 4 : 0)}%` }} /><i className="is-messages" style={{ height: `${Math.max(day.messages / maxDailyValue * 100, day.messages ? 4 : 0)}%` }} /><i className="is-evaluations" style={{ height: `${Math.max(day.evaluations / maxDailyValue * 100, day.evaluations ? 4 : 0)}%` }} /></div><span>{day.label}</span></div>)}</div>{data.daily.length === 0 && <EmptyState label="Ainda não há dados diários para este período." />}</article>
-        <article className="reports-panel reports-panel--ratings"><PanelHeading eyebrow="Qualidade percebida" title="Distribuição das notas" description="Veja onde a experiência está ganhando força — e onde precisa de atenção." />{!hasRatings ? <EmptyState label="Nenhuma avaliação recebida no período." /> : <div className="reports-rating-list">{[...data.ratings].sort((left, right) => right.rating - left.rating).map((rating) => <div className="reports-rating-row" key={rating.rating}><span className="reports-rating-score">★ {rating.rating}</span><div className="reports-rating-track"><i style={{ width: `${rating.total / maxRatingValue * 100}%` }} /></div><strong>{rating.total}</strong><small>{rating.ai} IA · {rating.human} humano</small></div>)}</div>}</article>
+        <article className="reports-panel reports-panel--ratings"><PanelHeading eyebrow="Qualidade percebida" title="Distribuição das notas" description="Veja onde a experiência está ganhando força — e onde precisa de atenção." />{!hasRatings ? <EmptyState label="Nenhuma avaliação recebida no período." /> : <div className="reports-rating-list">{[...data.ratings].sort((left, right) => right.rating - left.rating).map((rating) => <div className="reports-rating-row" key={rating.rating}><span className="reports-rating-score"><Icon name="star" /> {rating.rating}</span><div className="reports-rating-track"><i style={{ width: `${rating.total / maxRatingValue * 100}%` }} /></div><strong>{rating.total}</strong><small>{rating.ai} IA · {rating.human} humano</small></div>)}</div>}</article>
       </section>
 
       <section className="reports-two-columns"><ReportTable title="Desempenho por atendente" description="A nota humana e o volume de cada pessoa da equipe." columns={['Atendente', 'Conversas', 'Nota', 'Avaliações', 'Mensagens']}><tbody>{data.by_attendant.map((attendant) => <tr key={`${attendant.id ?? 'none'}-${attendant.name}`}><td><div className="reports-person"><span>{attendant.name.slice(0, 1).toUpperCase()}</span><strong>{attendant.name}</strong></div></td><td>{formatNumber(attendant.conversations)}</td><td><Score value={attendant.rating} count={attendant.rating_count} /></td><td>{formatNumber(attendant.evaluations)}</td><td>{formatNumber(attendant.human_messages)}</td></tr>)}{data.by_attendant.length === 0 && <tr><td colSpan={5}><EmptyState label="Nenhum atendente encontrado para os filtros atuais." /></td></tr>}</tbody></ReportTable><ReportTable title="Desempenho por setor" description="Compare a experiência completa em cada equipe." columns={['Setor', 'Conversas', 'Geral', 'IA', 'Humano']}><tbody>{data.by_sector.map((sector) => <tr key={`${sector.id ?? 'none'}-${sector.name}`}><td><strong>{sector.name}</strong></td><td>{formatNumber(sector.conversations)}</td><td><Score value={sector.rating} count={sector.rating_count} /></td><td><Score value={sector.ai_rating} count={sector.ai_rating_count} subtle /></td><td><Score value={sector.human_rating} count={sector.human_rating_count} subtle /></td></tr>)}{data.by_sector.length === 0 && <tr><td colSpan={5}><EmptyState label="Nenhum setor encontrado para os filtros atuais." /></td></tr>}</tbody></ReportTable></section>
@@ -199,8 +200,8 @@ export function ReportsPage({ onBack, permissions = null }: { onBack?: () => voi
   </div>
 }
 
-function MetricCard({ icon, tone, label, value, detail, featured = false }: { icon: string; tone: string; label: string; value: string; detail: string; featured?: boolean }) {
-  return <article className={`reports-kpi reports-kpi--${tone}${featured ? ' is-featured' : ''}`}><span className="reports-kpi-icon">{icon}</span><div><span>{label}</span><strong>{value}</strong><small>{detail}</small></div></article>
+function MetricCard({ icon, tone, label, value, detail, featured = false }: { icon: IconName; tone: string; label: string; value: string; detail: string; featured?: boolean }) {
+  return <article className={`reports-kpi reports-kpi--${tone}${featured ? ' is-featured' : ''}`}><span className="reports-kpi-icon"><Icon name={icon} /></span><div><span>{label}</span><strong>{value}</strong><small>{detail}</small></div></article>
 }
 
 function PanelHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
@@ -212,11 +213,11 @@ function ReportTable({ title, description, columns, children }: { title: string;
 }
 
 function Score({ value, count, subtle = false }: { value: number; count: number; subtle?: boolean }) {
-  return count > 0 ? <span className={`reports-score${subtle ? ' is-subtle' : ''}`}>★ {value.toFixed(1)}</span> : <span className="reports-muted">—</span>
+  return count > 0 ? <span className={`reports-score${subtle ? ' is-subtle' : ''}`}><Icon name="star" /> {value.toFixed(1)}</span> : <span className="reports-muted">—</span>
 }
 
 function EmptyState({ label }: { label: string }) {
-  return <div className="reports-empty"><span>◌</span><p>{label}</p></div>
+  return <div className="reports-empty"><span><Icon name="inbox" /></span><p>{label}</p></div>
 }
 
 function formatNumber(value: number) { return value.toLocaleString('pt-BR') }
