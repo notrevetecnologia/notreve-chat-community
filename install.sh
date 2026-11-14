@@ -122,8 +122,8 @@ if [ -f "$0" ]; then
 fi
 
 if [ "$SELF_IS_FILE" -eq 0 ]; then
-	if exec </dev/tty 2>/dev/null; then
-		:
+	if [ -r /dev/tty ] && [ -t 1 ]; then
+		exec </dev/tty
 	else
 		exec </dev/null
 	fi
