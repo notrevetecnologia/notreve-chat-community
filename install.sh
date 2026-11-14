@@ -56,7 +56,7 @@ EOF
 }
 
 prompt() {
-	if [ "$ASSUME_YES" -eq 1 ] || [ ! -r /dev/tty ] || [ ! -t 0 ]; then
+	if [ "$ASSUME_YES" -eq 1 ] || [ ! -r /dev/tty ]; then
 		return 0
 	fi
 	printf '%s' "$1" > /dev/tty
@@ -204,7 +204,7 @@ rand_pass() {
 mkdir -p "$DIR"
 
 LOCAL_CHECKOUT=0
-if [ "$SELF_IS_FILE" -eq 1 ] && [ "$SCRIPT_DIR" = "$DIR" ]; then
+if [ "$SELF_IS_FILE" -eq 1 ] && [ "$SCRIPT_DIR" = "$DIR" ] && [ -d "$DIR/.git" ]; then
 	LOCAL_CHECKOUT=1
 fi
 

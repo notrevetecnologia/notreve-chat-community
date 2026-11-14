@@ -107,7 +107,7 @@ sudo ./install.sh                 # ou: sudo ./install.sh --domain painel.exempl
 ```
 
 Opções do instalador: `--dir`, `--domain`, `--update`, `--reset`, `--yes`,
-`--version`, `-h`. Veja tudo em [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
+`--ref`/`--version`, `-h`. Veja tudo em [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
 
 ## Primeiro acesso
 
@@ -127,7 +127,8 @@ ncc up | down | restart | logs | update | backup | restore | doctor | version
 ```
 
 Atualizar: `sudo ncc update` (faz backup do banco, baixa a versão atualizada,
-aplica as migrations e sobe de novo).
+aplica as migrations e sobe de novo). Instalações feitas pelo comando rápido
+também baixam um novo tarball a cada atualização; checkouts Git usam `git pull`.
 
 ## Desenvolvimento
 

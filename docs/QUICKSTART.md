@@ -74,9 +74,10 @@ ncc version       # versao instalada
 sudo ncc update
 ```
 
-O update faz **backup do banco**, puxa a versão atualizada, aplica as migrations e
-sobe de novo. Se algo falhar, o backup fica em `backups/` para restaurar com
-`ncc restore`.
+O update faz **backup do banco**, baixa a versão atualizada, aplica as migrations
+e sobe de novo. Instalações do comando rápido baixam um novo tarball; checkouts
+Git usam `git pull`. Se algo falhar, o backup fica em `backups/` para restaurar
+com `ncc restore`.
 
 ## Instalação manual (a partir do código)
 
