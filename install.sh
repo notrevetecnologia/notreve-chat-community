@@ -19,16 +19,6 @@
 #
 set -eu
 
-if [ ! -f "$0" ]; then
-	INSTALL_TMP=$(mktemp)
-	cat > "$INSTALL_TMP"
-	export NCC_INSTALL_TMP="$INSTALL_TMP"
-	exec sh "$INSTALL_TMP" "$@"
-fi
-if [ -n "${NCC_INSTALL_TMP:-}" ]; then
-	trap 'rm -f "$NCC_INSTALL_TMP"' EXIT
-fi
-
 APP_NAME="Notreve Chat Community"
 REPO="notrevetecnologia/notreve-chat-community"
 GITHUB="https://github.com/${REPO}"
@@ -277,7 +267,7 @@ if [ "$EXISTING" -eq 1 ]; then
 	mkdir -p "$DIR/backups"
 	BACKUP_FILE="$DIR/backups/pg-$(date +%Y%m%d-%H%M%S).sql"
 	log "Backup do banco em $BACKUP_FILE ..."
-	if (cd "$DIR" && docker compose exec -T postgres pg_dump -U "$PG_USER" "$PG_DB" > "$BACKUP_FILE" 2>/dev/null); then
+	if (cd "$DIR" && docker compose exec -T postgres pg_dump -U "$PG_USER" "$PG_DB" </dev/null > "$BACKUP_FILE" 2>/dev/null); then
 		log "Backup concluido."
 	else
 		warn "backup nao pode ser feito agora (seguindo com a atualizacao)"
@@ -288,15 +278,15 @@ fi
 cd "$DIR"
 
 log "Validando configuracao..."
-docker compose config >/dev/null || die "configuracao invalida (revise $DIR/.env)"
+docker compose config </dev/null >/dev/null || die "configuracao invalida (revise $DIR/.env)"
 
 log "Subindo containers (o primeiro build pode demorar)..."
-docker compose up -d --build
+docker compose up -d --build </dev/null
 
 log "Aguardando o painel ficar saudavel..."
 i=0
 while :; do
-	APP_ID=$(docker compose ps -q app 2>/dev/null || true)
+	APP_ID=$(docker compose ps -q app </dev/null 2>/dev/null || true)
 	STATUS=""
 	if [ -n "$APP_ID" ]; then
 		STATUS=$(docker inspect -f '{{.State.Health.Status}}' "$APP_ID" 2>/dev/null || true)
@@ -304,13 +294,13 @@ while :; do
 	if [ "$STATUS" = "healthy" ]; then
 		break
 	fi
-	if [ -n "$APP_ID" ] && docker compose exec -T app wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1; then
+	if [ -n "$APP_ID" ] && docker compose exec -T app wget -qO- http://127.0.0.1:8080/health </dev/null >/dev/null 2>&1; then
 		break
 	fi
 	i=$((i + 1))
 	if [ "$i" -ge "$HEALTH_RETRIES" ]; then
 		warn "timeout aguardando o health"
-		docker compose logs app --tail 50 || true
+		docker compose logs app --tail 50 </dev/null || true
 		die "o painel nao ficou saudavel a tempo"
 	fi
 	sleep "$HEALTH_SLEEP"
