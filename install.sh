@@ -152,7 +152,9 @@ if [ "$MODE" = "reset" ]; then
 fi
 
 if [ -r /etc/os-release ]; then
+	INSTALL_VERSION="$VERSION"
 	. /etc/os-release
+	VERSION="$INSTALL_VERSION"
 	if [ "${ID:-}" != "ubuntu" ]; then
 		warn "ambiente nao suportado: o projeto foi projetado para Ubuntu 24.04/26.04. Prossiga por sua conta e risco."
 	fi
