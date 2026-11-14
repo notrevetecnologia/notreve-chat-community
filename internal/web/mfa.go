@@ -32,7 +32,7 @@ var mfaPageTemplate = template.Must(template.New("mfa").Parse(`<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.Title}} · {{.BrandName}}</title>
   {{if .FaviconURL}}<link rel="icon" href="{{.FaviconURL}}">{{end}}
-  <link rel="stylesheet" href="/static/mfa.css?v=20260915-2">
+  <link rel="stylesheet" href="/static/mfa.css?v=20261114-1">
   <style>
     :root {
       --brand-primary: {{.PrimaryColor}};

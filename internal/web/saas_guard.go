@@ -118,6 +118,10 @@ func (s *Server) SaaSGuard(next http.Handler) http.Handler {
 			s.handleMFAConfirm(w, r)
 			return
 		}
+		if r.Method == http.MethodGet && r.URL.Path == "/logout" {
+			s.handleLogout(w, r)
+			return
+		}
 		if r.Method == http.MethodGet && r.URL.Path == "/api/react/mfa" {
 			s.handleMFAStatus(w, r)
 			return
