@@ -14,15 +14,15 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func totpQRDataURI(uri string) string {
+func totpQRDataURI(uri string) template.URL {
 	if strings.TrimSpace(uri) == "" {
-		return ""
+		return template.URL("")
 	}
 	png, err := qrcode.Encode(uri, qrcode.Medium, 256)
 	if err != nil {
-		return ""
+		return template.URL("")
 	}
-	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(png)
+	return template.URL("data:image/png;base64," + base64.StdEncoding.EncodeToString(png))
 }
 
 var mfaPageTemplate = template.Must(template.New("mfa").Parse(`<!doctype html>
@@ -70,7 +70,6 @@ var mfaPageTemplate = template.Must(template.New("mfa").Parse(`<!doctype html>
     <p class="auth-footnote"><a class="auth-link" href="/logout">Sair da conta</a> · Sua segurança vem primeiro.</p>
   </section>
 </body>
-</body>
 </html>`))
 
 type mfaPageData struct {
@@ -78,7 +77,7 @@ type mfaPageData struct {
 	Message         string
 	Secret          string
 	URI             string
-	QR              string
+	QR              template.URL
 	BrandName       string
 	BrandInitial    string
 	LogoURL         string
