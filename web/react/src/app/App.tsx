@@ -1,33 +1,36 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChannelsPage } from '../features/channels/ChannelsPage'
-import { ContactsPage } from '../features/contacts/ContactsPage'
-import { AgentsPage } from '../features/agents/AgentsPage'
-import { AgentEditorPage } from '../features/agents/AgentEditorPage'
-import { ChatflowPage } from '../features/chatflow/ChatflowPage'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { LoginPage, SetupPage } from '../features/auth'
-import { CampaignsPage } from '../features/campaigns/CampaignsPage'
-import { InboxPage, type TransferTarget } from '../features/inbox'
-import { IntegrationsPage } from '../features/integrations'
-import LearningPage from '../features/learning/LearningPage'
-import KnowledgePage from '../features/knowledge/KnowledgePage'
-import SkillsPage from '../features/skills/SkillsPage'
-import SchedulesPage from '../features/schedules/SchedulesPage'
-import LogsPage from '../features/logs/LogsPage'
-import MessageLibraryPage from '../features/message-library/MessageLibraryPage'
-import PlatformPage from '../features/platform/PlatformPage'
-import { PlatformSetup } from '../features/platform/PlatformSetup'
-import PlansPage from '../features/plans/PlansPage'
-import { ProvidersPage } from '../features/providers'
-import { ReportsPage } from '../features/reports/ReportsPage'
-import SettingsPage from '../features/settings/SettingsPage'
-import { TeamPage } from '../features/team/TeamPage'
-import { LgpdPage } from '../features/lgpd/LgpdPage'
-import { WizardPage } from '../features/wizard'
+import type { TransferTarget } from '../features/inbox/types'
 import { AppShell } from './app-shell'
+import { navigationItems, type NavigationItem } from './navigation'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { applyBrandingTheme, brandingDocumentTitle, type Branding } from '../branding'
 import { playNewMessageSound, showDesktopNotification, startTitleAlert, stopTitleAlert } from '../shared/notifications'
 import { Icon, type IconName } from '../shared/icons'
+
+const ChannelsPage = lazy(() => import('../features/channels/ChannelsPage').then((module) => ({ default: module.ChannelsPage })))
+const ContactsPage = lazy(() => import('../features/contacts/ContactsPage').then((module) => ({ default: module.ContactsPage })))
+const AgentsPage = lazy(() => import('../features/agents/AgentsPage').then((module) => ({ default: module.AgentsPage })))
+const AgentEditorPage = lazy(() => import('../features/agents/AgentEditorPage').then((module) => ({ default: module.AgentEditorPage })))
+const ChatflowPage = lazy(() => import('../features/chatflow/ChatflowPage').then((module) => ({ default: module.ChatflowPage })))
+const CampaignsPage = lazy(() => import('../features/campaigns/CampaignsPage').then((module) => ({ default: module.CampaignsPage })))
+const InboxPage = lazy(() => import('../features/inbox/InboxPage').then((module) => ({ default: module.InboxPage })))
+const IntegrationsPage = lazy(() => import('../features/integrations').then((module) => ({ default: module.IntegrationsPage })))
+const LearningPage = lazy(() => import('../features/learning/LearningPage'))
+const KnowledgePage = lazy(() => import('../features/knowledge/KnowledgePage'))
+const SkillsPage = lazy(() => import('../features/skills/SkillsPage'))
+const SchedulesPage = lazy(() => import('../features/schedules/SchedulesPage'))
+const LogsPage = lazy(() => import('../features/logs/LogsPage'))
+const MessageLibraryPage = lazy(() => import('../features/message-library/MessageLibraryPage'))
+const PlatformPage = lazy(() => import('../features/platform/PlatformPage'))
+const PlatformSetup = lazy(() => import('../features/platform/PlatformSetup').then((module) => ({ default: module.PlatformSetup })))
+const PlansPage = lazy(() => import('../features/plans/PlansPage'))
+const ProvidersPage = lazy(() => import('../features/providers').then((module) => ({ default: module.ProvidersPage })))
+const ReportsPage = lazy(() => import('../features/reports/ReportsPage').then((module) => ({ default: module.ReportsPage })))
+const SettingsPage = lazy(() => import('../features/settings/SettingsPage'))
+const TeamPage = lazy(() => import('../features/team/TeamPage').then((module) => ({ default: module.TeamPage })))
+const LgpdPage = lazy(() => import('../features/lgpd/LgpdPage').then((module) => ({ default: module.LgpdPage })))
+const WizardPage = lazy(() => import('../features/wizard').then((module) => ({ default: module.WizardPage })))
 
 type SessionIdentity = {
   id?: number
@@ -59,6 +62,8 @@ type ConversationSummaryResponse = {
 }
 
 type Surface = 'overview' | 'inbox' | 'channels' | 'contacts' | 'agents' | 'agent' | 'providers' | 'integrations' | 'team' | 'campaigns' | 'reports' | 'learning' | 'knowledge' | 'library' | 'empresas' | 'servidores' | 'marca' | 'plans' | 'settings' | 'setup' | 'login' | 'chatflows' | 'lgpd' | 'wizard' | 'skills' | 'schedules' | 'logs' | 'platformSetup'
+
+type BootstrapStatus = 'loading' | 'ready' | 'error'
 
 const surfaceNavigation: Record<Surface, string> = {
   overview: 'conversas', inbox: 'inbox', channels: 'canais', contacts: 'contatos', agents: 'agentes', agent: 'agentes',
@@ -121,8 +126,12 @@ export default function App() {
 function AppContent() {
   const [identity, setIdentity] = useState<SessionIdentity | null>(null)
   const [branding, setBranding] = useState<Branding | null>(null)
-  const [permissions, setPermissions] = useState<string[] | null>(null)
-  const [modules, setModules] = useState<string[] | null>(null)
+  const [permissions, setPermissions] = useState<string[]>([])
+  const [modules, setModules] = useState<string[]>([])
+  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('loading')
+  const [bootstrapNonce, setBootstrapNonce] = useState(0)
+  const [navigationNotice, setNavigationNotice] = useState<string | null>(null)
+  const [settingsDirty, setSettingsDirty] = useState(false)
   const [transferTargets, setTransferTargets] = useState<TransferTarget[]>([])
   const [surface, setSurface] = useState<Surface>(readSurface)
   const [agentId, setAgentId] = useState<number | null>(readAgentId)
@@ -141,41 +150,77 @@ function AppContent() {
   const previousWaitingRef = useRef<number | null>(null)
   const firstRunCheckedRef = useRef(false)
 
+  const canNavigateTo = (next: Surface) => {
+    if (surface !== 'settings' || next === 'settings' || !settingsDirty) return true
+    if (!window.confirm('Há alterações não salvas em Configurações. Deseja descartá-las?')) return false
+    setSettingsDirty(false)
+    return true
+  }
+
   useEffect(() => {
     let active = true
+    setBootstrapStatus('loading')
     void fetch('/api/react/bootstrap', { credentials: 'same-origin' })
       .then(async (response) => {
-        if (!response.ok) return null
+        if (!response.ok) throw new Error(`bootstrap_failed_${response.status}`)
         return await response.json() as { data?: { user?: { id?: number; name?: string; role?: string }; branding?: Branding; transfer_targets?: TransferTarget[]; permissions?: string[]; modules?: Array<{ key?: string; enabled?: boolean }> } }
       })
       .then((payload) => {
-        if (!active || !payload?.data) return
+        if (!active || !payload?.data?.user) throw new Error('bootstrap_invalid')
         const user = payload.data.user
-        if (user) {
-          const role = user.role?.trim() || 'operador'
-          setIdentity({ id: typeof user.id === 'number' ? user.id : undefined, name: user.name?.trim() || 'Usuário', role })
-          if (role === 'super_admin') {
-            setSurface('empresas')
-            const params = new URLSearchParams(window.location.search)
-            params.set('view', 'empresas')
-            params.delete('tab')
-            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
-          }
-        }
+        const role = user.role?.trim() || 'operador'
+        setIdentity({ id: typeof user.id === 'number' ? user.id : undefined, name: user.name?.trim() || 'Usuário', role })
         if (payload.data.branding) {
           setBranding(payload.data.branding)
           applyBrandingTheme(payload.data.branding)
           brandingDocumentTitle(payload.data.branding.name)
         }
-        if (payload.data.transfer_targets) setTransferTargets(payload.data.transfer_targets)
-        if (payload.data.permissions) setPermissions(payload.data.permissions)
-        if (payload.data.modules) setModules(payload.data.modules.filter((module) => module.enabled !== false).map((module) => module.key || '').filter(Boolean))
+        setTransferTargets(payload.data.transfer_targets ?? [])
+        setPermissions(payload.data.permissions ?? [])
+        setModules((payload.data.modules ?? []).filter((module) => module.enabled !== false).map((module) => module.key || '').filter(Boolean))
+        setBootstrapStatus('ready')
       })
-      .catch(() => undefined)
+      .catch(() => { if (active) setBootstrapStatus('error') })
     return () => {
       active = false
     }
-  }, [])
+  }, [bootstrapNonce])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextSurface = readSurface()
+      if (!canNavigateTo(nextSurface)) {
+        window.history.forward()
+        return
+      }
+      const nextInboxConversationId = readInboxConversationId()
+      if (nextSurface === 'inbox' && nextInboxConversationId !== inboxConversationId) {
+        setInboxNonce((value) => value + 1)
+      }
+      setSurface(nextSurface)
+      setAgentId(readAgentId())
+      setKnowledgeAgentId(readKnowledgeAgentId())
+      setChatflowId(readChatflowId())
+      setInboxConversationId(readInboxConversationId())
+      setCampaignTab(readCampaignTab())
+      setLibraryTab(readLibraryTab())
+      setNavigationNotice(null)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [inboxConversationId, settingsDirty, surface])
+
+  useEffect(() => {
+    if (bootstrapStatus !== 'ready' || !identity) return
+    if (surfaceAllowed(surface, identity.role, permissions, modules)) return
+    const next = firstAllowedSurface(identity.role, permissions, modules)
+    if (next === null) return
+    setSurface(next)
+    setNavigationNotice('Essa área não está disponível para o seu perfil. Você foi direcionado para uma página permitida.')
+    const params = new URLSearchParams()
+    if (next !== 'overview') params.set('view', next)
+    updateLocation(params, true)
+  }, [bootstrapStatus, identity, modules, permissions, surface])
 
   useEffect(() => {
     if (!identity || firstRunCheckedRef.current) return
@@ -199,19 +244,29 @@ function AppContent() {
       try {
         if (isSuper) {
           const [tenants, servers] = await Promise.all([
-            fetch('/api/react/platform/tenants', { credentials: 'same-origin' }).then((response) => response.json()),
-            fetch('/api/react/platform/whatsapp-servers', { credentials: 'same-origin' }).then((response) => response.json()),
+            fetchJSON('/api/react/platform/tenants'),
+            fetchJSON('/api/react/platform/whatsapp-servers'),
           ])
           if (!active) return
-          if (asArray(tenants).length === 0 && asArray(servers).length === 0) setSurface('platformSetup')
+          if (asArray(tenants).length === 0 && asArray(servers).length === 0) {
+            setSurface('platformSetup')
+            const params = new URLSearchParams()
+            params.set('view', 'platformSetup')
+            updateLocation(params, true)
+          }
         } else {
           const [providers, channels, agents] = await Promise.all([
-            fetch('/api/react/providers', { credentials: 'same-origin' }).then((response) => response.json()),
-            fetch('/api/react/channels', { credentials: 'same-origin' }).then((response) => response.json()),
-            fetch('/api/react/agents', { credentials: 'same-origin' }).then((response) => response.json()),
+            fetchJSON('/api/react/providers'),
+            fetchJSON('/api/react/channels'),
+            fetchJSON('/api/react/agents'),
           ])
           if (!active) return
-          if (asCount(providers) === 0 && asCount(channels) === 0 && asCount(agents) === 0) setSurface('wizard')
+          if (asCount(providers) === 0 && asCount(channels) === 0 && asCount(agents) === 0) {
+            setSurface('wizard')
+            const params = new URLSearchParams()
+            params.set('view', 'wizard')
+            updateLocation(params, true)
+          }
         }
       } catch {
         return
@@ -289,7 +344,9 @@ function AppContent() {
     return name.split(/\s+/)[0]
   }, [identity?.name])
 
-  const navigateTo = (next: Surface) => {
+  const navigateTo = (next: Surface): boolean => {
+    if (!canNavigateTo(next)) return false
+    setNavigationNotice(null)
     setSurface(next)
     setKnowledgeAgentId(null)
     setChatflowId(null)
@@ -301,11 +358,13 @@ function AppContent() {
     params.delete('agent_id')
     params.delete('conversation')
     params.delete('chatflow')
-    const query = params.toString()
-    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+    updateLocation(params)
+    return true
   }
 
-  const openInbox = (conversationId?: number) => {
+  const openInbox = (conversationId?: number): boolean => {
+    if (!canNavigateTo('inbox')) return false
+    setNavigationNotice(null)
     setSurface('inbox')
     setInboxConversationId(conversationId ?? null)
     if (conversationId) setInboxNonce((value) => value + 1)
@@ -317,8 +376,8 @@ function AppContent() {
     if (conversationId) params.set('conversation', String(conversationId))
     else params.delete('conversation')
     params.delete('chatflow')
-    const query = params.toString()
-    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+    updateLocation(params)
+    return true
   }
 
   const openContact = (search: string) => {
@@ -327,7 +386,9 @@ function AppContent() {
     navigateTo('contacts')
   }
 
-  const openAgent = (id: number | null) => {
+  const openAgent = (id: number | null): boolean => {
+    if (!canNavigateTo('agent')) return false
+    setNavigationNotice(null)
     setAgentId(id)
     setSurface('agent')
     const params = new URLSearchParams(window.location.search)
@@ -338,11 +399,13 @@ function AppContent() {
     params.delete('agent_id')
     params.delete('conversation')
     params.delete('chatflow')
-    const query = params.toString()
-    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+    updateLocation(params)
+    return true
   }
 
-  const openKnowledge = (id: number | null) => {
+  const openKnowledge = (id: number | null): boolean => {
+    if (!canNavigateTo('knowledge')) return false
+    setNavigationNotice(null)
     setKnowledgeAgentId(id)
     setSurface('knowledge')
     const params = new URLSearchParams(window.location.search)
@@ -353,17 +416,29 @@ function AppContent() {
     params.delete('tab')
     params.delete('conversation')
     params.delete('chatflow')
-    const query = params.toString()
-    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+    updateLocation(params)
+    return true
   }
 
   const activeNavigationId = surfaceNavigation[surface]
   const unreadCount = inboxUnread ?? summary.waiting ?? 0
   const canOpen = (module: string, permission: string) =>
-    (modules === null || modules.includes(module)) && (permissions === null || permissions.includes(permission))
+    modules.includes(module) && permissions.includes(permission)
   const canOpenInbox = canOpen('conversas', 'conversas_ver')
   const canSearch = canOpenInbox || canOpen('contatos', 'contatos_gerenciar') || canOpen('ia', 'agentes_gerenciar')
 
+  if (bootstrapStatus === 'loading') {
+    return <main className="app-bootstrap-state" aria-busy="true"><span className="app-bootstrap-spinner" /><h1>Preparando seu workspace</h1><p>Carregando permissões, módulos e identidade visual.</p></main>
+  }
+  if (bootstrapStatus === 'error' || !identity) {
+    return <main className="app-bootstrap-state"><span className="app-bootstrap-error"><Icon name="alert-circle" /></span><h1>Não foi possível abrir o workspace</h1><p>Confira sua conexão e tente novamente. Nenhuma configuração foi alterada.</p><button className="primary-button" type="button" onClick={() => setBootstrapNonce((value) => value + 1)}>Tentar novamente <Icon name="refresh" /></button></main>
+  }
+  if (!navigationItems.some((item) => navigationItemAllowed(item, identity.role, permissions, modules))) {
+    return <main className="app-bootstrap-state"><span className="app-bootstrap-error"><Icon name="shield" /></span><h1>Seu perfil ainda não possui acesso</h1><p>Peça ao administrador da empresa para liberar ao menos um módulo e uma permissão para sua conta.</p></main>
+  }
+  if (!surfaceAllowed(surface, identity.role, permissions, modules)) {
+    return <main className="app-bootstrap-state" role="status" aria-live="polite" aria-busy="true"><span className="app-bootstrap-spinner" /><h1>Ajustando seu acesso</h1><p>Direcionando para uma página disponível para o seu perfil.</p></main>
+  }
   if (surface === 'login') return <LoginPage />
   if (surface === 'setup') {
     return <SetupPage brandName={branding?.name || 'Notreve'} onNavigate={(next) => navigateToSetupSurface(next, setSurface)} />
@@ -394,35 +469,38 @@ function AppContent() {
       onOpenAgent={(id) => openAgent(id)}
       onOpenInbox={(conversationId) => openInbox(conversationId)}
       onOpenLearning={() => navigateTo('learning')}
-      onNavigate={(id) => {
-        if (id === 'canais') navigateTo('channels')
-        else if (id === 'contatos') navigateTo('contacts')
-        else if (id === 'agentes') navigateTo('agents')
-        else if (id === 'ias') navigateTo('providers')
-        else if (id === 'integracoes') navigateTo('integrations')
-        else if (id === 'equipe') navigateTo('team')
-        else if (id === 'campanhas') { setCampaignTab('campaigns'); navigateTo('campaigns') }
-        else if (id === 'relatorios') navigateTo('reports')
-        else if (id === 'aprendizado') navigateTo('learning')
-        else if (id === 'skills') navigateTo('skills')
-        else if (id === 'agendamentos') navigateTo('schedules')
-        else if (id === 'conhecimento') navigateTo('knowledge')
-        else if (id === 'chatflows') navigateTo('chatflows')
-        else if (id === 'biblioteca') { setLibraryTab('quick-replies'); navigateTo('library') }
-        else if (id === 'empresas') navigateTo('empresas')
-        else if (id === 'primeiros-passos') navigateTo('platformSetup')
-        else if (id === 'planos') navigateTo('plans')
-        else if (id === 'servidores') navigateTo('servidores')
-        else if (id === 'marca') navigateTo('marca')
-        else if (id === 'configuracoes') navigateTo('settings')
-        else if (id === 'logs') navigateTo('logs')
-        else if (id === 'lgpd') navigateTo('lgpd')
-        else if (id === 'wizard') navigateTo('wizard')
-        else if (id === 'inbox') openInbox()
-        else if (id === 'conversas') navigateTo('overview')
-      }}
+       onNavigate={(id) => {
+         if (id === 'canais') return navigateTo('channels')
+         if (id === 'contatos') return navigateTo('contacts')
+         if (id === 'agentes') return navigateTo('agents')
+         if (id === 'ias') return navigateTo('providers')
+         if (id === 'integracoes') return navigateTo('integrations')
+         if (id === 'equipe') return navigateTo('team')
+         if (id === 'campanhas') { setCampaignTab('campaigns'); return navigateTo('campaigns') }
+         if (id === 'relatorios') return navigateTo('reports')
+         if (id === 'aprendizado') return navigateTo('learning')
+         if (id === 'skills') return navigateTo('skills')
+         if (id === 'agendamentos') return navigateTo('schedules')
+         if (id === 'conhecimento') return navigateTo('knowledge')
+         if (id === 'chatflows') return navigateTo('chatflows')
+         if (id === 'biblioteca') { setLibraryTab('quick-replies'); return navigateTo('library') }
+         if (id === 'empresas') return navigateTo('empresas')
+         if (id === 'primeiros-passos') return navigateTo('platformSetup')
+         if (id === 'planos') return navigateTo('plans')
+         if (id === 'servidores') return navigateTo('servidores')
+         if (id === 'marca') return navigateTo('marca')
+         if (id === 'configuracoes') return navigateTo('settings')
+         if (id === 'logs') return navigateTo('logs')
+         if (id === 'lgpd') return navigateTo('lgpd')
+         if (id === 'wizard') return navigateTo('wizard')
+         if (id === 'inbox') return openInbox()
+         if (id === 'conversas') return navigateTo('overview')
+         return false
+       }}
     >
-      <ErrorBoundary resetKey={surface} onGoHome={() => navigateTo('overview')}>
+      {navigationNotice && <div className="app-navigation-notice" role="status"><Icon name="info" /><span>{navigationNotice}</span><button type="button" onClick={() => setNavigationNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
+      <ErrorBoundary resetKey={surface} onReset={() => window.location.reload()} onGoHome={() => navigateTo('overview')}>
+      <Suspense fallback={<PageLoadingFallback />}>
       {surface === 'overview' ? (
           <OverviewPage
             brand={brandPresentation}
@@ -493,11 +571,11 @@ function AppContent() {
       ) : surface === 'plans' ? (
         <PlansPage onBack={() => navigateTo('empresas')} />
       ) : surface === 'settings' ? (
-        <SettingsPage onBack={() => navigateTo('overview')} />
+        <SettingsPage onBack={() => navigateTo('overview')} onDirtyChange={setSettingsDirty} />
       ) : surface === 'lgpd' ? (
         <LgpdPage permissions={permissions} onBack={() => navigateTo('overview')} />
       ) : surface === 'wizard' ? (
-        <WizardPage onDone={() => navigateTo('overview')} onNavigate={(view) => navigateTo(view as Surface)} />
+        <WizardPage onNavigate={(view) => navigateTo(view as Surface)} />
       ) : surface === 'reports' ? (
         <ReportsPage onBack={() => navigateTo('overview')} permissions={permissions} />
       ) : (
@@ -513,9 +591,14 @@ function AppContent() {
           onOpenLearning={canOpen('ia', 'aprendizado_ver') ? () => navigateTo('learning') : undefined}
         />
       )}
+      </Suspense>
       </ErrorBoundary>
     </AppShell>
   )
+}
+
+function PageLoadingFallback() {
+  return <div className="app-page-loading" role="status" aria-live="polite" aria-busy="true"><span className="app-bootstrap-spinner" aria-hidden="true" /><p>Carregando página…</p></div>
 }
 
 function navigateToSetupSurface(next: string, setSurface: (surface: Surface) => void) {
@@ -524,7 +607,7 @@ function navigateToSetupSurface(next: string, setSurface: (surface: Surface) => 
     setSurface(next as Surface)
     const params = new URLSearchParams(window.location.search)
     params.set('view', next)
-    window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
+    updateLocation(params)
   }
 }
 
@@ -822,6 +905,55 @@ function DashboardSkeleton() {
       </div>
     </div>
   )
+}
+
+const navigationSurfaces: Record<string, Surface> = {
+  conversas: 'overview', inbox: 'inbox', relatorios: 'reports', wizard: 'wizard', contatos: 'contacts', campanhas: 'campaigns',
+  agentes: 'agents', conhecimento: 'knowledge', ias: 'providers', aprendizado: 'learning', skills: 'skills', chatflows: 'chatflows',
+  canais: 'channels', integracoes: 'integrations', equipe: 'team', agendamentos: 'schedules', biblioteca: 'library', empresas: 'empresas',
+  'primeiros-passos': 'platformSetup', planos: 'plans', servidores: 'servidores', marca: 'marca', configuracoes: 'settings', logs: 'logs', lgpd: 'lgpd',
+}
+
+function navigationItemAllowed(item: NavigationItem, role: string, permissions: string[], modules: string[]): boolean {
+  if (role === 'super_admin' ? item.group !== 'plataforma' : item.group === 'plataforma') return false
+  const moduleEnabled = item.requiredAnyModule
+    ? item.requiredAnyModule.some((module) => modules.includes(module))
+    : !item.module || modules.includes(item.module)
+  const permissionGranted = item.requiredPermission
+    ? permissions.includes(item.requiredPermission)
+    : !item.requiredAnyPermission || item.requiredAnyPermission.some((permission) => permissions.includes(permission))
+  return moduleEnabled && permissionGranted
+}
+
+function surfaceAllowed(surface: Surface, role: string, permissions: string[], modules: string[]): boolean {
+  if (surface === 'login') return false
+  const item = navigationItems.find((candidate) => candidate.id === surfaceNavigation[surface])
+  return item ? navigationItemAllowed(item, role, permissions, modules) : false
+}
+
+function firstAllowedSurface(role: string, permissions: string[], modules: string[]): Surface | null {
+  const preferred: Surface[] = role === 'super_admin' ? ['empresas', 'platformSetup'] : ['overview', 'inbox']
+  const preferredSurface = preferred.find((candidate) => surfaceAllowed(candidate, role, permissions, modules))
+  if (preferredSurface) return preferredSurface
+  for (const item of navigationItems) {
+    const candidate = navigationSurfaces[item.id]
+    if (candidate && navigationItemAllowed(item, role, permissions, modules)) return candidate
+  }
+  return null
+}
+
+function updateLocation(params: URLSearchParams, replace = false) {
+  const query = params.toString()
+  const next = `${window.location.pathname}${query ? `?${query}` : ''}`
+  const current = `${window.location.pathname}${window.location.search}`
+  if (next === current) return
+  window.history[replace ? 'replaceState' : 'pushState'](null, '', next)
+}
+
+async function fetchJSON(url: string): Promise<unknown> {
+  const response = await fetch(url, { credentials: 'same-origin' })
+  if (!response.ok) throw new Error(`request_failed_${response.status}`)
+  return await response.json()
 }
 
 function failureTypeSummary(byType: Record<string, number> | null | undefined) {

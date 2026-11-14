@@ -38,6 +38,9 @@ import {
 } from './channelsShared'
 import './Channels.css'
 
+const isAbortError = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
+
 function ChannelHealthLine({ channel }: { channel: Channel }) {
   if (channel.type !== 'whatsapp' && channel.type !== 'telegram') return null
   const status = channelHealthClass(channel.health_status)
@@ -68,30 +71,35 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
   const [actionId, setActionId] = useState<number | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [offset, setOffset] = useState(0)
   const [total, setTotal] = useState(0)
   const pollRef = useRef<number | null>(null)
+  const loadRequestRef = useRef(0)
 
-  const loadChannels = useCallback(async () => {
+  const loadChannels = useCallback(async (signal?: AbortSignal) => {
+    const requestID = ++loadRequestRef.current
     setLoading(true)
     try {
       const params = new URLSearchParams({ limit: String(DEFAULT_PAGE_SIZE) })
-      if (query.trim()) params.set('q', query.trim())
+      if (debouncedQuery.trim()) params.set('q', debouncedQuery.trim())
       if (typeFilter) params.set('type', typeFilter)
       if (statusFilter) params.set('status', statusFilter)
       if (offset > 0) params.set('cursor', encodeCursor(offset))
-      const payload = await requestEnvelope<Channel[]>(`/api/react/channels?${params.toString()}`)
+      const payload = await requestEnvelope<Channel[]>(`/api/react/channels?${params.toString()}`, { signal })
+      if (signal?.aborted || requestID !== loadRequestRef.current) return
       setChannels(payload.data || [])
       setTotal(payload.meta.total ?? payload.data?.length ?? 0)
       setError(null)
     } catch (loadError) {
+      if (isAbortError(loadError) || requestID !== loadRequestRef.current) return
       setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os canais.')
     } finally {
-      setLoading(false)
+      if (requestID === loadRequestRef.current) setLoading(false)
     }
-  }, [query, typeFilter, statusFilter, offset])
+  }, [debouncedQuery, typeFilter, statusFilter, offset])
 
   const loadAgents = useCallback(async () => {
     try {
@@ -112,14 +120,21 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
   }, [])
 
   useEffect(() => {
-    void loadChannels()
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 275)
+    return () => window.clearTimeout(timer)
+  }, [query])
+  useEffect(() => {
+    const controller = new AbortController()
+    void loadChannels(controller.signal)
+    return () => controller.abort()
+  }, [loadChannels])
+  useEffect(() => {
     void loadAgents()
     void loadChatflows()
     return () => {
       if (pollRef.current !== null) window.clearInterval(pollRef.current)
     }
-  }, [loadChannels, loadAgents, loadChatflows])
-  useEffect(() => { setOffset(0) }, [query, typeFilter, statusFilter])
+  }, [loadAgents, loadChatflows])
 
   const markChannelHealth = (id: number, status: string) => {
     setChannels((current) => current.map((channel) => channel.id === id ? { ...channel, health_status: status, last_checked_at: new Date().toISOString() } : channel))
@@ -345,10 +360,10 @@ export function ChannelsPage({ permissions = null }: { permissions?: string[] | 
       {error && <div className="channels-alert" role="alert"><span><Icon name="alert-circle" /></span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
       {notice && <div className="channels-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
 
-      <FilterBar resultLabel={`${total} canal${total === 1 ? '' : 'is'}`} onReset={() => { setQuery(''); setTypeFilter(''); setStatusFilter('') }}>
-        <FilterSearch value={query} onChange={setQuery} placeholder="Buscar canal ou agente" />
-        <FilterSelect value={typeFilter} onChange={setTypeFilter} label="Filtrar tipo" options={[{ value: '', label: 'Todos os tipos' }, { value: 'whatsapp', label: 'WhatsApp' }, { value: 'telegram', label: 'Telegram' }, { value: 'webchat', label: 'Webchat' }]} />
-        <FilterSelect value={statusFilter} onChange={setStatusFilter} label="Filtrar status" options={[{ value: '', label: 'Todos os status' }, { value: 'ativos', label: 'Ativos' }, { value: 'inativos', label: 'Inativos' }]} />
+      <FilterBar resultLabel={`${total} canal${total === 1 ? '' : 'is'}`} onReset={() => { setOffset(0); setQuery(''); setTypeFilter(''); setStatusFilter('') }}>
+        <FilterSearch value={query} onChange={(value) => { setOffset(0); setQuery(value) }} placeholder="Buscar canal ou agente" />
+        <FilterSelect value={typeFilter} onChange={(value) => { setOffset(0); setTypeFilter(value) }} label="Filtrar tipo" options={[{ value: '', label: 'Todos os tipos' }, { value: 'whatsapp', label: 'WhatsApp' }, { value: 'telegram', label: 'Telegram' }, { value: 'webchat', label: 'Webchat' }]} />
+        <FilterSelect value={statusFilter} onChange={(value) => { setOffset(0); setStatusFilter(value) }} label="Filtrar status" options={[{ value: '', label: 'Todos os status' }, { value: 'ativos', label: 'Ativos' }, { value: 'inativos', label: 'Inativos' }]} />
       </FilterBar>
       {loading ? (
         <div className="channels-state"><span className="channels-spinner" /> Carregando canais…</div>

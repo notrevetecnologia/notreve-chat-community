@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Schedules.css'
 import { Icon } from '../../shared/icons'
+import { Modal } from '../../shared/Modal'
 
 type ScheduleTipo = 'once' | 'interval' | 'cron'
 type ScheduleAcao = 'enviar_mensagem' | 'rodar_ferramenta' | 'callback_agente'
@@ -292,10 +293,8 @@ export default function SchedulesPage({ onBack, permissions = null }: { onBack?:
 
     {!loading && items.length > 0 && <Pagination total={total} limit={DEFAULT_PAGE_SIZE} offset={offset} onOffsetChange={setOffset} loading={loading} />}
 
-    {draft && <div className="schedules-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor() }}>
-      <section className="schedules-modal" role="dialog" aria-modal="true" aria-labelledby="schedule-editor-title">
-        <header><div><span className="eyebrow">{editingID === null ? 'Novo agendamento' : 'Editar agendamento'}</span><h2 id="schedule-editor-title">{editingID === null ? 'Criar agendamento' : 'Ajustar agendamento'}</h2></div><button type="button" className="schedules-modal-close" onClick={closeEditor} aria-label="Fechar"><Icon name="close" /></button></header>
-        <div className="schedules-form">
+    {draft && <Modal open title={editingID === null ? 'Criar agendamento' : 'Ajustar agendamento'} onClose={closeEditor} size="lg" footer={<><button className="secondary-button" type="button" onClick={closeEditor} disabled={saving}>Cancelar</button><button className="primary-button" type="button" onClick={() => void save()} disabled={saving}>{saving ? 'Salvando…' : 'Salvar agendamento'}</button></>}>
+      <div className="schedules-form">
           <label className="schedules-form-wide"><span>Nome *</span><input autoFocus value={draft.nome} onChange={(event) => update('nome', event.target.value)} placeholder="Ex.: follow-up de proposta" /></label>
           <label className="schedules-form-wide"><span>Descrição</span><input value={draft.descricao} onChange={(event) => update('descricao', event.target.value)} placeholder="Para que serve este agendamento" /></label>
           <label><span>Tipo *</span>
@@ -338,9 +337,7 @@ export default function SchedulesPage({ onBack, permissions = null }: { onBack?:
             <label className="schedules-form-wide"><span>Ferramenta *</span><input value={draft.ferramenta} onChange={(event) => update('ferramenta', event.target.value)} placeholder="Nome exato da ferramenta (integração)" /></label>
             <label className="schedules-form-wide"><span>Argumentos (JSON)</span><textarea rows={4} value={draft.argumentos} onChange={(event) => update('argumentos', event.target.value)} placeholder='{"chave": "valor"}' /></label>
           </>}
-        </div>
-        <footer><button className="secondary-button" type="button" onClick={closeEditor} disabled={saving}>Cancelar</button><button className="primary-button" type="button" onClick={() => void save()} disabled={saving}>{saving ? 'Salvando…' : 'Salvar agendamento'}</button></footer>
-      </section>
-    </div>}
+      </div>
+    </Modal>}
   </div>
 }

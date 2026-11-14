@@ -207,6 +207,7 @@ const normalizeListPayload = (payload: unknown): ConversationListResult => {
     conversations: source.map(normalizeConversation).filter((conversation) => conversation.id > 0),
     incremental: root.incremental === true || data.incremental === true,
     cursor: asString(root.cursor ?? data.cursor ?? meta.next_cursor) || undefined,
+    hasMore: meta.has_more === true || data.has_more === true || root.has_more === true,
   }
 }
 
@@ -269,6 +270,7 @@ export const createInboxApi = (options: InboxApiOptions = {}): InboxApi => {
       const query = new URLSearchParams()
       if (params.status) query.set('status', params.status)
       query.set('limit', '100')
+      if (params.cursor) query.set('cursor', params.cursor)
       const suffix = query.toString()
       const payload = await request<unknown>(`${basePath}${suffix ? `?${suffix}` : ''}`, {
         signal: params.signal,

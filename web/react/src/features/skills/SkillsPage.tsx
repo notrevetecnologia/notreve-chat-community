@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Skills.css'
 import { Icon } from '../../shared/icons'
+import { Modal } from '../../shared/Modal'
 
 type Skill = {
   id: number
@@ -176,10 +177,8 @@ export default function SkillsPage({ onBack, permissions = null, onOpenAgent }: 
 
     {!loading && skills.length > 0 && <Pagination total={total} limit={DEFAULT_PAGE_SIZE} offset={offset} onOffsetChange={setOffset} loading={loading} />}
 
-    {draft && <div className="skills-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor() }}>
-      <section className="skills-modal" role="dialog" aria-modal="true" aria-labelledby="skill-editor-title">
-        <header><div><span className="eyebrow">{editingID === null ? 'Nova skill' : 'Editar skill'}</span><h2 id="skill-editor-title">{editingID === null ? 'Criar skill' : 'Ajustar skill'}</h2></div><button type="button" className="skills-modal-close" onClick={closeEditor} aria-label="Fechar"><Icon name="close" /></button></header>
-        <div className="skills-form">
+    {draft && <Modal open title={editingID === null ? 'Criar skill' : 'Ajustar skill'} onClose={closeEditor} size="lg" footer={<><button className="secondary-button" type="button" onClick={closeEditor} disabled={saving}>Cancelar</button><button className="primary-button" type="button" onClick={() => void save()} disabled={saving}>{saving ? 'Salvando…' : 'Salvar skill'}</button></>}>
+      <div className="skills-form">
           <label><span>Nome *</span><input autoFocus value={draft.nome} onChange={(event) => update('nome', event.target.value)} placeholder="Ex.: vendas-abertura" /></label>
           <label><span>Categoria</span><input value={draft.categoria} onChange={(event) => update('categoria', event.target.value)} placeholder="comercial" /></label>
           <label className="skills-form-wide"><span>Descrição (aparece no prompt) *</span><input value={draft.descricao} onChange={(event) => update('descricao', event.target.value)} placeholder="Quando a IA deve usar esta skill" /></label>
@@ -191,9 +190,7 @@ export default function SkillsPage({ onBack, permissions = null, onOpenAgent }: 
             </div>
           </label>
           <label className="skills-agent-option"><input type="checkbox" checked={draft.ativa} onChange={(event) => update('ativa', event.target.checked)} /> Skill ativa</label>
-        </div>
-        <footer><button className="secondary-button" type="button" onClick={closeEditor} disabled={saving}>Cancelar</button><button className="primary-button" type="button" onClick={() => void save()} disabled={saving}>{saving ? 'Salvando…' : 'Salvar skill'}</button></footer>
-      </section>
-    </div>}
+      </div>
+    </Modal>}
   </div>
 }

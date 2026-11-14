@@ -19,7 +19,7 @@
   border: 1px solid var(--inbox-border);
   border-radius: 20px;
   box-shadow: 0 18px 48px rgba(30, 52, 84, 0.1);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .inbox-list-panel,
@@ -203,6 +203,30 @@
 
 .inbox-conversation-list:focus-visible {
   box-shadow: inset 0 0 0 2px #8bb6f4;
+}
+
+.inbox-load-more {
+  width: calc(100% - 24px);
+  margin: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inbox-load-more:hover:not(:disabled),
+.inbox-load-more:focus-visible {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.inbox-load-more:disabled {
+  cursor: wait;
+  opacity: .65;
 }
 
 .inbox-conversation {
@@ -795,6 +819,7 @@ input:focus-visible {
   --inbox-danger: #b94d59;
   --inbox-danger-soft: #fff0f2;
   grid-template-columns: 304px minmax(0, 1fr) 286px;
+  position: relative;
   height: min(860px, calc(100vh - 32px));
   min-height: 620px;
   background: var(--inbox-surface);
@@ -1533,12 +1558,26 @@ input:focus-visible {
   border-left: 1px solid var(--inbox-border);
 }
 
+.inbox-context-backdrop,
+.inbox-context-close {
+  display: none;
+}
+
 .inbox-context-header {
+  display: flex;
   min-height: 106px;
   align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
   padding: 27px 20px 18px;
   background: #fff;
   border-bottom: 1px solid var(--inbox-border);
+}
+
+.inbox-context-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .inbox-context-header h2 {
@@ -1560,6 +1599,8 @@ input:focus-visible {
 
 .inbox-context-scroll {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 17px 16px 20px;
 }
 
@@ -1739,12 +1780,56 @@ input:focus-visible {
   }
 
   .inbox-context-panel {
-    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 11;
+    width: min(360px, calc(100% - 24px));
+    box-shadow: -18px 0 44px rgba(20, 35, 58, 0.2);
+    animation: inbox-context-in 180ms ease both;
+  }
+
+  .inbox-page--context-open .inbox-context-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: block;
+    padding: 0;
+    background: rgba(20, 35, 58, 0.34);
+    border: 0;
+    cursor: pointer;
   }
 
   .inbox-context-toggle {
-    display: none;
+    display: inline-flex;
   }
+
+  .inbox-context-close {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: var(--inbox-ink-soft);
+    background: var(--inbox-surface-soft);
+    border: 1px solid var(--inbox-border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .inbox-context-close:hover,
+  .inbox-context-close:focus-visible {
+    color: var(--inbox-primary);
+    background: var(--inbox-primary-soft);
+  }
+}
+
+@keyframes inbox-context-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @media (max-width: 800px) {
@@ -1761,6 +1846,22 @@ input:focus-visible {
 
   .inbox-detail-header-side {
     align-items: flex-end;
+  }
+
+  .inbox-context-toggle {
+    width: 34px;
+    min-height: 34px;
+    justify-content: center;
+    padding: 0;
+    font-size: 15px;
+  }
+
+  .inbox-context-toggle-label {
+    display: none;
+  }
+
+  .inbox-context-panel {
+    width: min(100%, 360px);
   }
 
   .inbox-last-seen {

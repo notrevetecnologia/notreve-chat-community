@@ -360,6 +360,14 @@
   box-shadow: 0 0 0 3px rgba(18, 148, 142, 0.14);
 }
 
+.wizard-field input:disabled,
+.wizard-field select:disabled,
+.wizard-field textarea:disabled {
+  background: var(--surface-muted);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
 .wizard-field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -403,6 +411,17 @@
 .wizard-channel.is-selected {
   border-color: var(--teal);
   background: var(--mint);
+}
+
+.wizard-channel:disabled,
+.wizard-preset:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.wizard-channel.is-selected:disabled,
+.wizard-preset.is-selected:disabled {
+  opacity: 1;
 }
 
 .wizard-channel-icon {

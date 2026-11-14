@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   emptyOptions,
   request,
@@ -10,6 +10,9 @@ import {
 import { Icon } from '../../shared/icons'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor } from "../../shared/Pagination";
 import "./Agents.css";
+
+const isAbortError = (error: unknown): boolean =>
+  typeof error === "object" && error !== null && "name" in error && error.name === "AbortError";
 
 export function AgentsPage({
   onBack,
@@ -24,39 +27,47 @@ export function AgentsPage({
   const [actionID, setActionID] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState("");
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
+  const loadRequestRef = useRef(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
+    const requestID = ++loadRequestRef.current;
     setLoading(true);
     try {
       const params = new URLSearchParams({ limit: String(DEFAULT_PAGE_SIZE) });
-      if (query.trim()) params.set("q", query.trim());
+      if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
       if (status) params.set("status", status);
       if (offset > 0) params.set("cursor", encodeCursor(offset));
-      const payload = await requestEnvelope<AgentResponse>(`/api/react/agents?${params.toString()}`);
+      const payload = await requestEnvelope<AgentResponse>(`/api/react/agents?${params.toString()}`, { signal });
+      if (signal?.aborted || requestID !== loadRequestRef.current) return;
       setAgents(payload.data.items || []);
       setOptions(payload.data.options || emptyOptions());
       setTotal(payload.meta.total ?? payload.data.items?.length ?? 0);
       setError(null);
     } catch (loadError) {
+      if (isAbortError(loadError) || requestID !== loadRequestRef.current) return;
       setError(
         loadError instanceof Error
           ? loadError.message
           : "Não foi possível carregar os agentes.",
       );
     } finally {
-      setLoading(false);
+      if (requestID === loadRequestRef.current) setLoading(false);
     }
-  }, [query, status, offset]);
+  }, [debouncedQuery, status, offset]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 275);
+    return () => window.clearTimeout(timer);
+  }, [query]);
   useEffect(() => {
-    setOffset(0);
-  }, [query, status]);
+    const controller = new AbortController();
+    void load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
 
   const toggle = async (agent: Agent) => {
     await runAction(agent.id, () =>
@@ -143,10 +154,10 @@ export function AgentsPage({
       )}
       <FilterBar
         resultLabel={`${total} agente${total === 1 ? "" : "s"}`}
-        onReset={() => { setQuery(""); setStatus(""); }}
+        onReset={() => { setOffset(0); setQuery(""); setStatus(""); }}
       >
-        <FilterSearch value={query} onChange={setQuery} placeholder="Buscar agente, instrução ou provedor" />
-        <FilterSelect value={status} onChange={setStatus} label="Filtrar status" options={[{ value: "", label: "Todos os status" }, { value: "ativos", label: "Ativos" }, { value: "inativos", label: "Pausados" }]} />
+        <FilterSearch value={query} onChange={(value) => { setOffset(0); setQuery(value); }} placeholder="Buscar agente, instrução ou provedor" />
+        <FilterSelect value={status} onChange={(value) => { setOffset(0); setStatus(value); }} label="Filtrar status" options={[{ value: "", label: "Todos os status" }, { value: "ativos", label: "Ativos" }, { value: "inativos", label: "Pausados" }]} />
       </FilterBar>
       {loading ? (
         <div className="agents-state">
@@ -174,8 +185,8 @@ export function AgentsPage({
             <article
               className="agent-card"
               key={agent.id}
-              onClick={() => onOpenAgent(agent.id)}
             >
+              <button className="agent-card-open" type="button" onClick={() => onOpenAgent(agent.id)} aria-label={`Editar agente ${agent.name}`} />
               <header>
                 <div
                   className={`agent-avatar ${agent.active ? "is-active" : ""}`}

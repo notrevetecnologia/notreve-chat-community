@@ -44,10 +44,10 @@ type TestTurn = {
 }
 
 const steps = [
-  { id: 'cerebro', label: 'Cérebro', hint: 'Escolha a IA' },
-  { id: 'canal', label: 'Canal', hint: 'Conecte a entrada' },
+  { id: 'provedor', label: 'Provedor', hint: 'Escolha a IA' },
   { id: 'agente', label: 'Agente', hint: 'Defina a persona' },
-  { id: 'testar', label: 'Testar', hint: 'Confira o resultado' },
+  { id: 'canal', label: 'Canal', hint: 'Conecte a entrada' },
+  { id: 'testar', label: 'Testar', hint: 'Opcional e recomendado' },
 ]
 
 const emptyProviderDraft = (): ProviderDraft => ({
@@ -107,9 +107,9 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
   const [channelType, setChannelType] = useState<ChannelType>('whatsapp')
   const [channelName, setChannelName] = useState('')
   const [channelToken, setChannelToken] = useState('')
-  const [channelId, setChannelId] = useState<number | null>(null)
   const [createdChannelId, setCreatedChannelId] = useState<number | null>(null)
   const [channelConnected, setChannelConnected] = useState(false)
+  const [channelConnectionSkipped, setChannelConnectionSkipped] = useState(false)
   const [channelConnecting, setChannelConnecting] = useState(false)
   const [whatsappQr, setWhatsappQr] = useState<string | null>(null)
   const pollRef = useRef<number | null>(null)
@@ -176,6 +176,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
   const resetChannelConnection = () => {
     stopChannelPolling()
     setChannelConnected(false)
+    setChannelConnectionSkipped(false)
     setChannelConnecting(false)
     setWhatsappQr(null)
   }
@@ -320,6 +321,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       const state = response.result
       if (state?.connected && state.loggedIn) {
         setChannelConnected(true)
+        setChannelConnectionSkipped(false)
         setWhatsappQr(null)
         stopChannelPolling()
         return true
@@ -338,6 +340,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       const result = response.result
       if (result?.connected || result?.loggedIn || result?.already) {
         setChannelConnected(true)
+        setChannelConnectionSkipped(false)
         setWhatsappQr(null)
         setNotice(result?.already ? 'Este número já está conectado.' : 'WhatsApp conectado com sucesso.')
         stopChannelPolling()
@@ -346,6 +349,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       if (result?.qr) {
         setWhatsappQr(result.qr)
         setChannelConnected(false)
+        setChannelConnectionSkipped(false)
         setNotice(result.already ? 'Este número já está conectado.' : 'Escaneie o QR Code no WhatsApp do número da empresa.')
       } else {
         setError('A API não retornou um QR Code agora. Tente novamente.')
@@ -359,9 +363,15 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
     }
   }, [refreshChannelStatus, stopChannelPolling])
 
+  const skipChannelConnection = () => {
+    stopChannelPolling()
+    setChannelConnectionSkipped(true)
+    setChannelConnecting(false)
+    setNotice('Canal criado sem conexão. Você poderá conectar o WhatsApp depois na tela de Canais.')
+  }
+
   const submitChannel = useCallback(async (): Promise<number | null> => {
     if (createdChannelId !== null) {
-      setChannelId(createdChannelId)
       return createdChannelId
     }
     if (!channelName.trim()) {
@@ -384,7 +394,6 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         ...(channelType === 'telegram' ? { token: channelToken.trim() } : {}),
       })
       setCreatedChannelId(created.id)
-      setChannelId(created.id)
       return created.id
     } catch (saveError) {
       setError(errorMessage(saveError, 'Não foi possível criar o canal.'))
@@ -414,9 +423,6 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         menu_opcoes: '',
         active: true,
       })
-      if (channelId !== null) {
-        await bindAgentToChannel(channelId, created.id)
-      }
       setCreatedAgentId(created.id)
       return created.id
     } catch (saveError) {
@@ -425,7 +431,21 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
     } finally {
       setSaving(false)
     }
-  }, [createdAgentId, agentName, agentPrompt, providerId, agentTemperature, channelType, channelId])
+  }, [createdAgentId, agentName, agentPrompt, providerId, agentTemperature])
+
+  const bindCreatedAgentToChannel = useCallback(async (targetChannelId: number, targetAgentId: number): Promise<boolean> => {
+    setSaving(true)
+    try {
+      await bindAgentToChannel(targetChannelId, targetAgentId)
+      return true
+    } catch (bindError) {
+      const detail = bindError instanceof Error && bindError.message ? ` Detalhe: ${bindError.message}` : ''
+      setError(`O agente e o canal foram criados, mas não foi possível vinculá-los. Tente continuar novamente para repetir apenas o vínculo.${detail}`)
+      return false
+    } finally {
+      setSaving(false)
+    }
+  }, [])
 
   const goNext = async () => {
     setError(null)
@@ -441,31 +461,44 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       return
     }
     if (step === 1) {
-      const id = await submitChannel()
+      const id = await submitAgent()
       if (id === null) return
-      if (channelType === 'whatsapp' && !channelConnected) {
-        await connectWhatsApp(id)
-        return
-      }
       setStep(2)
       return
     }
     if (step === 2) {
-      const id = await submitAgent()
+      if (createdAgentId === null) {
+        setError('Crie o agente antes de configurar o canal.')
+        return
+      }
+      const id = await submitChannel()
       if (id === null) return
+      if (channelType === 'whatsapp' && !channelConnected && !channelConnectionSkipped) {
+        await connectWhatsApp(id)
+        return
+      }
+      const linked = await bindCreatedAgentToChannel(id, createdAgentId)
+      if (!linked) return
       setStep(3)
     }
   }
 
   const goBack = () => {
     if (saving) return
+    if (createdAgentId !== null) {
+      setNotice('O agente já foi criado. Continue a configuração para evitar vínculos inconsistentes; depois você poderá editar tudo nas telas específicas.')
+      return
+    }
     setError(null)
     setNotice(null)
     setStep((current) => Math.max(0, current - 1))
   }
 
   const finish = () => {
-    onNavigate?.('inbox')
+    if (onNavigate) {
+      onNavigate('inbox')
+      return
+    }
     onDone?.()
   }
 
@@ -500,6 +533,10 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
   }
 
   const selectPreset = (preset: AgentPreset) => setAgentMode(preset.id)
+
+  const providerDisplayName = providerId !== null
+    ? providers.find((item) => item.id === providerId)?.name || (providerType === 'notreve' ? 'Notreve IA' : providerDraft.name.trim() || 'IA própria')
+    : 'Não definido'
 
   const renderCerebro = () => (
     <div className="wizard-step">
@@ -613,11 +650,11 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
     <div className="wizard-step">
       <div className="wizard-step-heading">
         <h2>Por onde os clientes chegam?</h2>
-        <p>Escolha o canal de entrada e dê um nome para identificá-lo no painel.</p>
+        <p>Escolha o canal de entrada. Ele será vinculado ao agente {agentName || 'criado no passo anterior'}.</p>
       </div>
       <div className="wizard-channel-grid">
         {channelOptions.map((option) => (
-          <button key={option.type} type="button" className={`wizard-channel${channelType === option.type ? ' is-selected' : ''}`} onClick={() => { setChannelType(option.type); setCreatedChannelId(null); resetChannelConnection() }}>
+          <button key={option.type} type="button" className={`wizard-channel${channelType === option.type ? ' is-selected' : ''}`} onClick={() => { setChannelType(option.type); setCreatedChannelId(null); resetChannelConnection() }} disabled={createdChannelId !== null}>
             <span className="wizard-channel-icon"><Icon name={option.icon} /></span>
             <strong>{option.label}</strong>
             <small>{option.description}</small>
@@ -626,12 +663,12 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       </div>
       <label className="wizard-field">
         <span>Nome do canal</span>
-        <input value={channelName} onChange={(event) => { setChannelName(event.target.value); setCreatedChannelId(null); resetChannelConnection() }} placeholder={`Ex.: ${channelTypeLabel(channelType)} principal`} />
+        <input value={channelName} onChange={(event) => { setChannelName(event.target.value); setCreatedChannelId(null); resetChannelConnection() }} placeholder={`Ex.: ${channelTypeLabel(channelType)} principal`} disabled={createdChannelId !== null} />
       </label>
       {channelType === 'telegram' && (
         <label className="wizard-field">
           <span>Token do bot</span>
-          <input type="password" value={channelToken} onChange={(event) => { setChannelToken(event.target.value); setCreatedChannelId(null) }} placeholder="123456789:AAFlorenBW..." autoComplete="new-password" />
+          <input type="password" value={channelToken} onChange={(event) => { setChannelToken(event.target.value); setCreatedChannelId(null) }} placeholder="123456789:AAFlorenBW..." autoComplete="new-password" disabled={createdChannelId !== null} />
         </label>
       )}
       {channelType === 'whatsapp' && createdChannelId !== null && (
@@ -656,6 +693,9 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
               <button className="secondary-button" type="button" onClick={() => void connectWhatsApp(createdChannelId)} disabled={channelConnecting}>
                 {channelConnecting ? 'Gerando…' : 'Gerar novo QR Code'}
               </button>
+              <button className="secondary-button" type="button" onClick={skipChannelConnection} disabled={channelConnecting}>
+                Continuar sem conectar agora
+              </button>
             </>
           )}
         </div>
@@ -665,6 +705,12 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         {channelType === 'telegram' && <><strong>Webhook do Telegram</strong><span>Use o token do @BotFather; depois configure o webhook na página de Canais.</span></>}
         {channelType === 'webchat' && <><strong>Widget do site</strong><span>Um widget será criado com um código pronto para colar no seu site.</span></>}
       </div>
+      {createdChannelId !== null && (
+        <div className="wizard-hint">
+          <strong>Canal criado</strong>
+          <span>Os dados ficam bloqueados para evitar duplicação. Ao continuar, o wizard vinculará este canal ao agente já criado.</span>
+        </div>
+      )}
     </div>
   )
 
@@ -676,7 +722,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       </div>
       <div className="wizard-preset-grid">
         {agentPresets.map((preset) => (
-          <button key={preset.id} type="button" className={`wizard-preset${agentMode === preset.id ? ' is-selected' : ''}`} onClick={() => selectPreset(preset)}>
+          <button key={preset.id} type="button" className={`wizard-preset${agentMode === preset.id ? ' is-selected' : ''}`} onClick={() => selectPreset(preset)} disabled={createdAgentId !== null}>
             <strong>{preset.label}</strong>
             <small>{preset.description}</small>
           </button>
@@ -684,25 +730,23 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
       </div>
       <label className="wizard-field">
         <span>Nome do agente</span>
-        <input value={agentName} onChange={(event) => { setAgentName(event.target.value); setCreatedAgentId(null) }} placeholder="Ex.: Concierge financeiro" />
+        <input value={agentName} onChange={(event) => { setAgentName(event.target.value); setCreatedAgentId(null) }} placeholder="Ex.: Concierge financeiro" disabled={createdAgentId !== null} />
       </label>
       <label className="wizard-field">
         <span>Instrução principal</span>
-        <textarea rows={6} value={agentPrompt} onChange={(event) => { setAgentPrompt(event.target.value); setCreatedAgentId(null) }} placeholder="Explique o papel, tom e limites deste agente." />
+        <textarea rows={6} value={agentPrompt} onChange={(event) => { setAgentPrompt(event.target.value); setCreatedAgentId(null) }} placeholder="Explique o papel, tom e limites deste agente." disabled={createdAgentId !== null} />
       </label>
       <label className="wizard-field">
         <span>Estilo de resposta</span>
-        <select value={agentTemperature} onChange={(event) => { setAgentTemperature(event.target.value); setCreatedAgentId(null) }}>
+        <select value={agentTemperature} onChange={(event) => { setAgentTemperature(event.target.value); setCreatedAgentId(null) }} disabled={createdAgentId !== null}>
           <option value="preciso">Preciso</option>
           <option value="equilibrado">Equilibrado</option>
           <option value="criativo">Criativo</option>
         </select>
       </label>
       <div className="wizard-hint">
-        <strong>Vínculos deste agente</strong>
-        <span>
-          Provedor: {providerId !== null ? (providers.find((item) => item.id === providerId)?.name || 'Novo provedor') : 'padrão'} · Canal: {channelTypeLabel(channelType)}{channelName.trim() ? ` (${channelName.trim()})` : ''}
-        </span>
+        <strong>{createdAgentId !== null ? 'Agente criado' : 'Provedor deste agente'}</strong>
+        <span>{createdAgentId !== null ? `Este agente já foi salvo com o provedor ${providerDisplayName}. Continue para criar e vinculá-lo a um canal.` : providerDisplayName}</span>
       </div>
     </div>
   )
@@ -710,13 +754,13 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
   const renderTestar = () => (
     <div className="wizard-step">
       <div className="wizard-step-heading">
-        <h2>Tudo pronto para testar</h2>
-        <p>Escreva como se fosse um cliente e veja a resposta da IA aqui mesmo, sem abrir a Caixa de entrada.</p>
+        <h2>Teste seu agente (opcional)</h2>
+        <p>Recomendamos enviar uma mensagem para conferir a resposta da IA. Se preferir, você pode concluir agora e testar depois.</p>
       </div>
       <div className="wizard-summary">
-        <div><span>Provedor</span><strong>{providerId !== null ? (providers.find((item) => item.id === providerId)?.name || 'Novo provedor') : 'Padrão'}</strong></div>
-        <div><span>Canal</span><strong>{channelTypeLabel(channelType)}</strong></div>
+        <div><span>Provedor</span><strong>{providerDisplayName}</strong></div>
         <div><span>Agente</span><strong>{agentName || 'Sem nome'}</strong></div>
+        <div><span>Canal</span><strong>{channelName.trim() || channelTypeLabel(channelType)}</strong></div>
       </div>
       {testTurns.length > 0 && (
         <div className="wizard-chat" role="log" aria-live="polite">
@@ -746,7 +790,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
 
   const progress = ((step + 1) / steps.length) * 100
   const providerBlocked = step === 0 && providerTestOk !== true
-  const channelBlocked = step === 1 && channelType === 'whatsapp' && createdChannelId !== null && !channelConnected
+  const channelBlocked = step === 2 && channelType === 'whatsapp' && createdChannelId !== null && !channelConnected && !channelConnectionSkipped
   const nextDisabled = saving || testingProvider || providerBlocked || channelBlocked
   const nextLabel = saving
     ? 'Salvando…'
@@ -762,7 +806,7 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         <header className="wizard-head">
           <span className="eyebrow">Configuração guiada</span>
           <h1>Monte seu atendimento em 4 passos</h1>
-          <p>Conecte a IA, crie um canal, defina o agente e teste. Você pode ajustar tudo depois nas telas específicas.</p>
+          <p>Conecte o provedor de IA, crie o agente, vincule um canal e, se quiser, faça um teste recomendado antes de concluir.</p>
         </header>
         <ol className="wizard-stepper">
           {steps.map((item, index) => (
@@ -782,12 +826,12 @@ export function WizardPage({ onDone, onNavigate }: WizardPageProps) {
         {notice && <div className="wizard-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
         <div className="wizard-body">
           {step === 0 && renderCerebro()}
-          {step === 1 && renderCanal()}
-          {step === 2 && renderAgente()}
+          {step === 1 && renderAgente()}
+          {step === 2 && renderCanal()}
           {step === 3 && renderTestar()}
         </div>
         <footer className="wizard-footer">
-          {step > 0 && <button className="secondary-button" type="button" onClick={goBack} disabled={saving}>Voltar</button>}
+          {step > 0 && createdAgentId === null && <button className="secondary-button" type="button" onClick={goBack} disabled={saving}>Voltar</button>}
           {step < 3 ? (
             <button className="primary-button" type="button" onClick={() => void goNext()} disabled={nextDisabled}>{nextLabel} <Icon name="arrow-right" /></button>
           ) : (

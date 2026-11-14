@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { Icon } from './icons'
 import './EntityScreen.css'
 
@@ -33,6 +33,28 @@ export function EntityScreen({
   notice?: ReactNode
   children: ReactNode
 }) {
+  const tabsId = useId().replace(/:/g, '')
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const activeIndex = tabs.findIndex((item) => item.key === activeTab)
+  const selectedIndex = activeIndex >= 0 ? activeIndex : 0
+  const tabIds = tabs.map((_, index) => `entity-tab-${tabsId}-${index}`)
+  const panelIds = tabs.map((_, index) => `entity-tab-panel-${tabsId}-${index}`)
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex = index
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length
+    else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length
+    else if (event.key === 'Home') nextIndex = 0
+    else if (event.key === 'End') nextIndex = tabs.length - 1
+    else return
+
+    event.preventDefault()
+    const nextTab = tabs[nextIndex]
+    if (!nextTab) return
+    onTabChange(nextTab.key)
+    tabRefs.current[nextIndex]?.focus()
+  }
+
   return (
     <div className="entity-screen">
       <header className="entity-screen-header">
@@ -51,23 +73,37 @@ export function EntityScreen({
 
       <div className="entity-tabs-card">
         <nav className="entity-tabs" role="tablist" aria-label="Seções">
-          {tabs.map((item) => (
+          {tabs.map((item, index) => (
             <button
               key={item.key}
+              ref={(element) => { tabRefs.current[index] = element }}
+              id={tabIds[index]}
               type="button"
               role="tab"
-              aria-selected={activeTab === item.key}
-              className={activeTab === item.key ? 'is-active' : ''}
+              aria-selected={selectedIndex === index}
+              aria-controls={panelIds[index]}
+              tabIndex={selectedIndex === index ? 0 : -1}
+              className={selectedIndex === index ? 'is-active' : ''}
               onClick={() => onTabChange(item.key)}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
             >
               <strong>{item.label}</strong>
               <small>{item.hint}</small>
             </button>
           ))}
         </nav>
-        <section className="entity-tab-panel" role="tabpanel">
-          {children}
-        </section>
+        {tabs.map((_, index) => (
+          <section
+            className="entity-tab-panel"
+            id={panelIds[index]}
+            role="tabpanel"
+            aria-labelledby={tabIds[index]}
+            hidden={selectedIndex !== index}
+            key={panelIds[index]}
+          >
+            {selectedIndex === index ? children : null}
+          </section>
+        ))}
       </div>
     </div>
   )

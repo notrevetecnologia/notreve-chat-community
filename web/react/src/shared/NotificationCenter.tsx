@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { normalizeConversation } from '../features/inbox'
+import { normalizeConversation } from '../features/inbox/inboxApi'
 import { Icon } from './icons'
 import './NotificationCenter.css'
 

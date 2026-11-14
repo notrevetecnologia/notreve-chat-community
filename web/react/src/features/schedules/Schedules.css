@@ -194,40 +194,6 @@
   color: #a52c2c;
   border-color: #f2b4b4;
 }
-.schedules-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(15, 23, 42, 0.45);
-  z-index: 50;
-}
-.schedules-modal {
-  width: min(760px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  background: #fff;
-  border-radius: 20px;
-  padding: 24px;
-  display: grid;
-  gap: 18px;
-}
-.schedules-modal header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 12px;
-}
-.schedules-modal h2 {
-  margin: 6px 0 0;
-}
-.schedules-modal-close {
-  border: 0;
-  background: transparent;
-  font-size: 22px;
-  cursor: pointer;
-}
 .schedules-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -252,9 +218,4 @@
 }
 .schedules-form-wide {
   grid-column: 1 / -1;
-}
-.schedules-modal footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }

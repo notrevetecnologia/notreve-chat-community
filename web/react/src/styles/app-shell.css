@@ -1596,6 +1596,38 @@ h1, h2, h3, h4 {
   height: 1em;
 }
 
+.app-bootstrap-state {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--ink-soft);
+  background: var(--shell-background, var(--surface-soft));
+  text-align: center;
+}
+
+.app-bootstrap-state h1 {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(24px, 4vw, 38px);
+  letter-spacing: -.04em;
+}
+
+.app-bootstrap-state p { max-width: 480px; margin: 0 0 8px; line-height: 1.6; }
+.app-bootstrap-spinner { width: 34px; height: 34px; border: 3px solid var(--line); border-top-color: var(--brand-primary); border-radius: 50%; animation: app-bootstrap-spin .8s linear infinite; }
+.app-bootstrap-error { display: grid; width: 52px; height: 52px; place-items: center; color: var(--danger-ink); background: var(--danger-soft); border: 1px solid var(--danger-line); border-radius: 16px; }
+.app-bootstrap-error svg { width: 24px; height: 24px; }
+.app-navigation-notice { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 12px 14px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); }
+.app-navigation-notice > svg { flex: 0 0 auto; color: var(--brand-primary); }
+.app-navigation-notice button { display: grid; width: 30px; height: 30px; margin-left: auto; place-items: center; padding: 0; color: inherit; background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
+.app-navigation-notice button:hover { background: var(--surface-soft); }
+.app-page-loading { display: grid; min-height: 280px; place-content: center; justify-items: center; gap: 12px; color: var(--ink-soft); }
+.app-page-loading p { margin: 0; }
+@keyframes app-bootstrap-spin { to { transform: rotate(360deg); } }
+
 .inbox-ai-summary-icon svg, .inbox-insight-icon svg { width: 1em; height: 1em; }
 .entity-alert button svg, .entity-notice button svg { width: 1em; height: 1em; }
 [class$="-alert"] > span svg, [class$="-notice"] > span svg, [class$="-toast"] > span svg { width: 1em; height: 1em; }

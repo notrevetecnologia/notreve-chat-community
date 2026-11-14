@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Modal } from '../../shared/Modal'
 import { FilterBar, FilterSearch, FilterSelect, Pagination, DEFAULT_PAGE_SIZE, encodeCursor, type PaginationMeta } from '../../shared/Pagination'
 import './Contacts.css'
@@ -34,6 +34,9 @@ const contactTags = (contact: Contact): string[] => Array.isArray(contact.tags) 
 const contactSegments = (contact: Contact): string[] => Array.isArray(contact.segments) ? contact.segments : []
 
 const contactExtras = (contact: Contact): ContactExtra[] => Object.entries(contact.campos_extras ?? {}).map(([key, value]) => ({ key, value }))
+
+const isAbortError = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
 
 const draftPayload = (draft: Draft) => ({
   name: draft.name.trim(),
@@ -74,6 +77,7 @@ export function ContactsPage({ onBack, initialQuery = '' }: { onBack: () => void
   const [contacts, setContacts] = useState<Contact[]>([])
   const [segments, setSegments] = useState<Segment[]>([])
   const [query, setQuery] = useState(initialQuery)
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
   const [segmentFilter, setSegmentFilter] = useState('')
   const [whatsappFilter, setWhatsappFilter] = useState('')
   const [offset, setOffset] = useState(0)
@@ -92,26 +96,39 @@ export function ContactsPage({ onBack, initialQuery = '' }: { onBack: () => void
   const [importSegment, setImportSegment] = useState('')
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
+  const loadRequestRef = useRef(0)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
+    const requestID = ++loadRequestRef.current
     setLoading(true)
     try {
-      const params = new URLSearchParams({ limit: String(DEFAULT_PAGE_SIZE), q: query.trim() })
+      const params = new URLSearchParams({ limit: String(DEFAULT_PAGE_SIZE), q: debouncedQuery.trim() })
       if (segmentFilter) params.set('segment_id', segmentFilter)
       if (whatsappFilter) params.set('tem_whatsapp', whatsappFilter)
       if (offset > 0) params.set('cursor', encodeCursor(offset))
-      const payload = await requestEnvelope<ContactResponse>(`/api/react/contacts?${params.toString()}`)
+      const payload = await requestEnvelope<ContactResponse>(`/api/react/contacts?${params.toString()}`, { signal })
+      if (signal?.aborted || requestID !== loadRequestRef.current) return
       setContacts(payload.data.items || [])
       setSegments(payload.data.segments || [])
       setTotal(payload.meta.total ?? payload.data.items?.length ?? 0)
       setError(null)
     } catch (loadError) {
+      if (isAbortError(loadError) || requestID !== loadRequestRef.current) return
       setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os contatos.')
-    } finally { setLoading(false) }
-  }, [query, segmentFilter, whatsappFilter, offset])
+    } finally {
+      if (requestID === loadRequestRef.current) setLoading(false)
+    }
+  }, [debouncedQuery, segmentFilter, whatsappFilter, offset])
 
-  useEffect(() => { void load() }, [load])
-  useEffect(() => { setOffset(0) }, [query, segmentFilter, whatsappFilter])
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 275)
+    return () => window.clearTimeout(timer)
+  }, [query])
+  useEffect(() => {
+    const controller = new AbortController()
+    void load(controller.signal)
+    return () => controller.abort()
+  }, [load])
 
   const openCreate = () => { setEditingID(null); setDraft(emptyDraft()); setError(null) }
   const openEdit = (contact: Contact) => {
@@ -197,10 +214,10 @@ export function ContactsPage({ onBack, initialQuery = '' }: { onBack: () => void
     </section>
     {error && <div className="contacts-alert" role="alert"><span>!</span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
     {notice && <div className="contacts-notice" role="status"><span><Icon name="check" /></span>{notice}<button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
-    <FilterBar resultLabel={`${total} contato${total === 1 ? '' : 's'}`} onReset={() => { setQuery(''); setSegmentFilter(''); setWhatsappFilter('') }}>
-      <FilterSearch value={query} onChange={setQuery} placeholder="Buscar por nome ou telefone" />
-      <FilterSelect value={segmentFilter} onChange={setSegmentFilter} label="Filtrar por segmento" options={[{ value: '', label: 'Todos os segmentos' }, ...segments.map((segment) => ({ value: String(segment.id), label: segment.name }))]} />
-      <FilterSelect value={whatsappFilter} onChange={setWhatsappFilter} label="Filtrar por WhatsApp" options={[{ value: '', label: 'WhatsApp: todos' }, { value: 'true', label: 'Com WhatsApp' }, { value: 'false', label: 'Sem WhatsApp' }]} />
+    <FilterBar resultLabel={`${total} contato${total === 1 ? '' : 's'}`} onReset={() => { setOffset(0); setQuery(''); setSegmentFilter(''); setWhatsappFilter('') }}>
+      <FilterSearch value={query} onChange={(value) => { setOffset(0); setQuery(value) }} placeholder="Buscar por nome ou telefone" />
+      <FilterSelect value={segmentFilter} onChange={(value) => { setOffset(0); setSegmentFilter(value) }} label="Filtrar por segmento" options={[{ value: '', label: 'Todos os segmentos' }, ...segments.map((segment) => ({ value: String(segment.id), label: segment.name }))]} />
+      <FilterSelect value={whatsappFilter} onChange={(value) => { setOffset(0); setWhatsappFilter(value) }} label="Filtrar por WhatsApp" options={[{ value: '', label: 'WhatsApp: todos' }, { value: 'true', label: 'Com WhatsApp' }, { value: 'false', label: 'Sem WhatsApp' }]} />
       <button className="secondary-button" type="button" onClick={() => void syncContacts()} disabled={actionKey === 'sync'}>{actionKey === 'sync' ? 'Sincronizando…' : 'Sincronizar WhatsApp'}</button>
       <button className="secondary-button" type="button" onClick={() => { setImportOpen(true); setImportResult(null); setImportFile(null); setImportSegment(''); setImportError(null) }}>Importar CSV</button>
     </FilterBar>

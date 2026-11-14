@@ -29,7 +29,7 @@ type AppShellProps = {
   onOpenAgent?: (id: number) => void
   onOpenInbox?: (conversationId?: number) => void
   onOpenLearning?: () => void
-  onNavigate?: (id: string) => void
+  onNavigate?: (id: string) => boolean | void
 }
 
 export type ShellBranding = {
@@ -135,8 +135,7 @@ const hasAccess = (
   module: string,
   permission: string,
 ): boolean =>
-  (modules === null || modules.includes(module)) &&
-  (permissions === null || permissions.includes(permission))
+  modules !== null && permissions !== null && modules.includes(module) && permissions.includes(permission)
 
 const searchShortcutLabel = (): string => {
   if (typeof navigator === 'undefined') return 'Ctrl K'
@@ -157,6 +156,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
       : window.matchMedia('(min-width: 981px)').matches,
   )
   const profileRef = useRef<HTMLDivElement>(null)
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
   const activeItem = useMemo(() => getNavigationItem(activeId), [activeId])
   const visualBranding = { ...defaultBranding, ...branding }
   const brandName = visualBranding.name || defaultBranding.name
@@ -170,9 +170,10 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
     .join('') || 'U'
   const activeGroup = activeItem.group
   const visibleNavigationItems = useMemo(() => navigationItems.filter((item) => {
-    if (userRole === 'super_admin') return item.group === 'plataforma'
-    const moduleEnabled = modules === null || (item.requiredAnyModule ? item.requiredAnyModule.some((module) => modules.includes(module)) : (!item.module || modules.includes(item.module)))
-    const permissionGranted = permissions === null || (!item.requiredPermission && !item.requiredAnyPermission) ||
+    if (modules === null || permissions === null) return false
+    if (userRole === 'super_admin' ? item.group !== 'plataforma' : item.group === 'plataforma') return false
+    const moduleEnabled = item.requiredAnyModule ? item.requiredAnyModule.some((module) => modules.includes(module)) : (!item.module || modules.includes(item.module))
+    const permissionGranted = (!item.requiredPermission && !item.requiredAnyPermission) ||
       (item.requiredPermission ? permissions.includes(item.requiredPermission) : item.requiredAnyPermission?.some((permission) => permissions.includes(permission)))
     return moduleEnabled && permissionGranted
   }), [modules, permissions, userRole])
@@ -193,6 +194,12 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
   const canSearch = canSearchConversations || canSearchContacts || canSearchAgents
   const shortcutLabel = useMemo(searchShortcutLabel, [])
   const railMode = collapsed && isDesktop
+  const sidebarHidden = !isDesktop && !mobileMenuOpen
+
+  const closeMobileMenu = (restoreFocus = false) => {
+    setMobileMenuOpen(false)
+    if (restoreFocus && !isDesktop) window.requestAnimationFrame(() => mobileMenuButtonRef.current?.focus())
+  }
 
   useEffect(() => {
     setActiveId(initialActiveId)
@@ -229,7 +236,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileMenuOpen(false)
+      if (event.key === 'Escape' && mobileMenuOpen) closeMobileMenu(true)
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
         if (canSearch) onSearchOpen?.()
@@ -237,7 +244,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [canSearch, onSearchOpen])
+  }, [canSearch, isDesktop, mobileMenuOpen, onSearchOpen])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -251,10 +258,11 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
 
   const selectNavigation = (id: string) => {
     const nextItem = getNavigationItem(id)
+    const accepted = onNavigate?.(id)
+    if (accepted === false) return
     setActiveId(id)
     setExpandedGroups((current) => ({ ...current, [nextItem.group]: true }))
-    setMobileMenuOpen(false)
-    onNavigate?.(id)
+    closeMobileMenu(true)
   }
 
   const toggleGroup = (group: NavigationItem['group']) => {
@@ -267,10 +275,16 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
         className="mobile-backdrop"
         type="button"
         aria-label="Fechar menu"
-        onClick={() => setMobileMenuOpen(false)}
+        onClick={() => closeMobileMenu(true)}
       />
 
-      <aside className="app-sidebar" id="app-sidebar" aria-label="Navegação principal">
+      <aside
+        className="app-sidebar"
+        id="app-sidebar"
+        aria-label="Navegação principal"
+        aria-hidden={sidebarHidden ? true : undefined}
+        inert={sidebarHidden ? true : undefined}
+      >
         <div className="sidebar-head">
           <div className="sidebar-brand">
             {visualBranding.logo ? (
@@ -299,7 +313,7 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
             className="sidebar-close"
             type="button"
             aria-label="Fechar menu"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => closeMobileMenu(true)}
           >
             <Icon name="close" />
           </button>
@@ -413,10 +427,12 @@ export function AppShell({ initialActiveId = 'conversas', children, userName, us
         <header className="app-header">
           <div className="header-leading">
             <button
+              ref={mobileMenuButtonRef}
               className="mobile-menu-toggle"
               type="button"
               aria-label="Abrir menu"
               aria-expanded={mobileMenuOpen}
+              aria-controls="app-sidebar"
               onClick={() => setMobileMenuOpen(true)}
             >
               <span />

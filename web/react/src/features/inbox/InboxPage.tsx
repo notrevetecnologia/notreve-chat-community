@@ -290,6 +290,7 @@ export function InboxPage({
   const [detailLoading, setDetailLoading] = useState(false)
   const [listLoaded, setListLoaded] = useState(false)
   const [listError, setListError] = useState<string | null>(null)
+  const [listMoreLoading, setListMoreLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   const [reconnecting, setReconnecting] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -299,6 +300,7 @@ export function InboxPage({
   const [transferValue, setTransferValue] = useState('')
   const [mobileDetailOpen, setMobileDetailOpen] = useState(selectedId !== null)
   const [contextOpen, setContextOpen] = useState(false)
+  const [contextDrawer, setContextDrawer] = useState(() => window.matchMedia('(max-width: 1240px)').matches)
   const [replyTo, setReplyTo] = useState<Message | null>(null)
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null)
   const [reactionPickerId, setReactionPickerId] = useState<number | null>(null)
@@ -320,6 +322,9 @@ export function InboxPage({
   const selectedIdRef = useRef(selectedId)
   const initialConversationRef = useRef(initialConversationId ?? null)
   const lastUpdatedAtRef = useRef('')
+  const listCursorRef = useRef<string | undefined>(undefined)
+  const listHasMoreRef = useRef(false)
+  const listMoreLoadingRef = useRef(false)
   const detailUpdatedAtRef = useRef('')
   const listRequestRef = useRef(0)
   const detailRequestRef = useRef(0)
@@ -329,6 +334,9 @@ export function InboxPage({
   const messageScrollRef = useRef<HTMLDivElement | null>(null)
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const contextToggleRef = useRef<HTMLButtonElement | null>(null)
+  const contextCloseRef = useRef<HTMLButtonElement | null>(null)
+  const contextPanelRef = useRef<HTMLElement | null>(null)
   const messageViewportRef = useRef({ stickToBottom: true, scrollTop: 0, scrollHeight: 0 })
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingStreamRef = useRef<MediaStream | null>(null)
@@ -480,28 +488,38 @@ export function InboxPage({
   }, [])
 
   const syncList = useCallback(
-    async (mode: 'initial' | 'poll') => {
+    async (mode: 'initial' | 'poll' | 'more') => {
+      if (mode === 'poll' && listMoreLoadingRef.current) return
+      if (mode === 'more' && listMoreLoadingRef.current) return
       const requestId = ++listRequestRef.current
       listAbortRef.current?.abort()
       const controller = new AbortController()
       listAbortRef.current = controller
       if (mode === 'initial') setListLoading(true)
+      if (mode === 'more') {
+        listMoreLoadingRef.current = true
+        setListMoreLoading(true)
+      }
       try {
-        const result = await api.listConversations({
-          status: filterStatus[filter],
-          updatedAt: mode === 'poll' ? lastUpdatedAtRef.current || undefined : undefined,
-          signal: controller.signal,
-        })
+          const result = await api.listConversations({
+            status: filterStatus[filter],
+            updatedAt: mode === 'poll' ? lastUpdatedAtRef.current || undefined : undefined,
+            cursor: mode === 'more' ? listCursorRef.current : undefined,
+            signal: controller.signal,
+          })
         if (requestId !== listRequestRef.current) return
         const incoming = [...result.conversations].sort(conversationSort)
-        const next = mode === 'poll' && result.incremental
-          ? Array.from(
+          const preservePagination = mode === 'poll' && (listHasMoreRef.current || listCursorRef.current !== undefined)
+          const next = mode === 'poll' && (result.incremental || preservePagination)
+            ? Array.from(
               incoming.reduce((map, conversation) => {
                 map.set(conversation.id, conversation)
                 return map
               }, new Map(conversationsRef.current.map((conversation) => [conversation.id, conversation]))),
             ).map(([, conversation]) => conversation).sort(conversationSort)
-          : incoming
+            : mode === 'more'
+              ? Array.from(new Map([...conversationsRef.current, ...incoming].map((conversation) => [conversation.id, conversation])).values()).sort(conversationSort)
+              : incoming
         if (mode === 'poll') {
           const known = new Map(conversationsRef.current.map((conversation) => [conversation.id, conversation]))
           const novelties = next.filter((conversation) => {
@@ -512,7 +530,11 @@ export function InboxPage({
         }
         const previousScrollTop = listScrollRef.current?.scrollTop ?? 0
         if (!sameConversationList(conversationsRef.current, next)) setConversations(next)
-        lastUpdatedAtRef.current = latestUpdatedAt(next)
+          lastUpdatedAtRef.current = latestUpdatedAt(next)
+          if (mode !== 'poll' || !preservePagination) {
+            listCursorRef.current = result.cursor
+            listHasMoreRef.current = result.hasMore === true
+          }
         setListError(null)
         setReconnecting(false)
         setListLoaded(true)
@@ -527,6 +549,10 @@ export function InboxPage({
         setReconnecting(true)
       } finally {
         if (requestId === listRequestRef.current && mode === 'initial') setListLoading(false)
+        if (requestId === listRequestRef.current && mode === 'more') {
+          listMoreLoadingRef.current = false
+          setListMoreLoading(false)
+        }
       }
     },
     [announceIncoming, api, filter],
@@ -600,9 +626,18 @@ export function InboxPage({
 
   useEffect(() => {
     lastUpdatedAtRef.current = ''
+    listCursorRef.current = undefined
+    listHasMoreRef.current = false
+    listMoreLoadingRef.current = false
+    setListMoreLoading(false)
     void syncList('initial')
     return () => listAbortRef.current?.abort()
   }, [syncList])
+
+  const loadMore = () => {
+    if (listMoreLoadingRef.current || !listHasMoreRef.current || !listCursorRef.current) return
+    void syncList('more')
+  }
 
   useEffect(() => {
     if (!listLoaded || listLoading) return
@@ -711,6 +746,49 @@ export function InboxPage({
       document.removeEventListener('keydown', closeWithEscape)
     }
   }, [composerEmojiOpen, reactionPickerId, shortcutOpen])
+
+  const closeContext = useCallback(() => {
+    setContextOpen(false)
+    window.requestAnimationFrame(() => contextToggleRef.current?.focus())
+  }, [])
+
+  useEffect(() => {
+    if (!contextOpen) return
+
+    if (contextDrawer) {
+      window.requestAnimationFrame(() => contextCloseRef.current?.focus())
+    }
+
+    const handleContextKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeContext()
+        return
+      }
+      if (event.key !== 'Tab' || !contextDrawer || !contextPanelRef.current) return
+      const focusable = Array.from(contextPanelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleContextKeyDown)
+    return () => document.removeEventListener('keydown', handleContextKeyDown)
+  }, [closeContext, contextDrawer, contextOpen])
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1240px)')
+    const updateContextMode = (event: MediaQueryListEvent) => setContextDrawer(event.matches)
+    setContextDrawer(query.matches)
+    query.addEventListener('change', updateContextMode)
+    return () => query.removeEventListener('change', updateContextMode)
+  }, [])
 
   useEffect(() => () => {
     if (pendingFileUrl) URL.revokeObjectURL(pendingFileUrl)
@@ -896,7 +974,7 @@ export function InboxPage({
   }
 
   const handleReturnToAI = () => {
-    if (!selectedConversation || selectedConversation.status !== 'humano_atendendo') return
+    if (!selectedConversation || (selectedConversation.status !== 'humano_atendendo' && selectedConversation.status !== 'humano_aguardando')) return
     if (!window.confirm('Devolver este atendimento para a IA? O próximo contato será processado pelo assistente virtual.')) return
     void runAction('return-to-ai', () => api.returnConversationToAI(selectedConversation.id))
   }
@@ -957,7 +1035,7 @@ export function InboxPage({
 
   return (
     <main className={wrapperClassName} aria-label="Caixa de entrada">
-      <section className="inbox-list-panel" aria-label="Lista de conversas">
+      <section className="inbox-list-panel" aria-label="Lista de conversas" aria-hidden={contextDrawer && contextOpen ? true : undefined} inert={contextDrawer && contextOpen ? true : undefined}>
         <header className="inbox-list-header">
           <div>
             <p className="inbox-eyebrow">Central de atendimento</p>
@@ -1041,7 +1119,8 @@ export function InboxPage({
               <span>{search ? 'Tente outro termo de busca.' : 'Novos atendimentos aparecerão nesta lista.'}</span>
             </div>
           ) : (
-            visibleConversations.map((conversation) => {
+            <>
+            {visibleConversations.map((conversation) => {
               const isSelected = conversation.id === selectedId
               return (
                 <button
@@ -1073,12 +1152,18 @@ export function InboxPage({
                   </span>
                 </button>
               )
-            })
+            })}
+            {listHasMoreRef.current && (
+              <button className="inbox-load-more" type="button" onClick={loadMore} disabled={listMoreLoading}>
+                {listMoreLoading ? 'Carregando mais conversas…' : 'Carregar mais conversas'}
+              </button>
+            )}
+            </>
           )}
         </div>
       </section>
 
-      <section className="inbox-detail-panel" aria-label="Conversa selecionada">
+      <section className="inbox-detail-panel" aria-label="Conversa selecionada" aria-hidden={contextDrawer && contextOpen ? true : undefined} inert={contextDrawer && contextOpen ? true : undefined}>
         {!selectedConversation ? (
           <div className="inbox-state inbox-state--detail">
             <span className="inbox-state-icon" aria-hidden="true"><Icon name="inbox" /></span>
@@ -1113,14 +1198,16 @@ export function InboxPage({
               </div>
               <div className="inbox-detail-header-side">
                 <button
+                  ref={contextToggleRef}
                   type="button"
                   className="inbox-context-toggle"
+                  aria-label={contextOpen ? 'Fechar contexto do atendimento' : 'Abrir contexto do atendimento'}
                   aria-expanded={contextOpen}
                   aria-controls="inbox-context-panel"
                   onClick={() => setContextOpen((current) => !current)}
                 >
                   <span aria-hidden="true"><Icon name="user" /></span>
-                  {contextOpen ? 'Fechar contexto' : 'Abrir contexto'}
+                  <span className="inbox-context-toggle-label">{contextOpen ? 'Fechar contexto' : 'Abrir contexto'}</span>
                 </button>
                 <span className={`inbox-status inbox-status--large inbox-status--${selectedConversation.status}`}>
                   <span className="inbox-status-dot" /> {statusLabel(selectedConversation.status)}
@@ -1328,7 +1415,9 @@ export function InboxPage({
         )}
       </section>
 
-      <aside id="inbox-context-panel" className="inbox-context-panel" aria-label="Contexto do atendimento" aria-hidden={!contextOpen}>
+      <button type="button" className="inbox-context-backdrop" aria-label="Fechar contexto do atendimento" tabIndex={-1} onClick={closeContext} />
+
+      <aside ref={contextPanelRef} id="inbox-context-panel" className="inbox-context-panel" role={contextDrawer ? 'dialog' : undefined} aria-modal={contextDrawer ? true : undefined} aria-label="Contexto do atendimento" aria-hidden={!contextOpen}>
         {!selectedConversation ? (
           <div className="inbox-context-empty">
             <span className="inbox-context-empty-icon" aria-hidden="true"><Icon name="user" /></span>
@@ -1342,7 +1431,10 @@ export function InboxPage({
                 <p className="inbox-eyebrow">Visão rápida</p>
                 <h2>Contexto</h2>
               </div>
-              <span className="inbox-context-live"><span className="inbox-pulse" /> Ao vivo</span>
+              <div className="inbox-context-header-actions">
+                <span className="inbox-context-live"><span className="inbox-pulse" /> Ao vivo</span>
+                <button ref={contextCloseRef} type="button" className="inbox-context-close" onClick={closeContext} aria-label="Fechar contexto do atendimento"><Icon name="close" /></button>
+              </div>
             </header>
 
             <div className="inbox-context-scroll">

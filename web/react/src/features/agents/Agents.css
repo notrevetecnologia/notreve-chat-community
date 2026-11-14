@@ -102,6 +102,7 @@
   gap: 18px;
 }
 .agent-card {
+  position: relative;
   display: flex;
   min-height: 310px;
   flex-direction: column;
@@ -270,6 +271,19 @@
   box-shadow: 0 22px 55px rgba(18, 148, 142, 0.14);
   transform: translateY(-2px);
 }
+.agent-card-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.agent-card-open:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand-primary) 28%, transparent); outline-offset: 3px; }
+.agent-card > :not(.agent-card-open) { pointer-events: none; }
+.agent-card footer { position: relative; z-index: 2; pointer-events: auto; }
 
 .agent-screen {
   display: grid;

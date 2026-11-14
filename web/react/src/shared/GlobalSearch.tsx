@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { normalizeConversation } from '../features/inbox'
+import { normalizeConversation } from '../features/inbox/inboxApi'
 import { Icon } from './icons'
 import './GlobalSearch.css'
 

@@ -115,11 +115,13 @@ export interface ConversationListResult {
   conversations: Conversation[]
   incremental: boolean
   cursor?: string
+  hasMore?: boolean
 }
 
 export interface InboxListParams {
   status?: string
   updatedAt?: string
+  cursor?: string
   signal?: AbortSignal
 }
 

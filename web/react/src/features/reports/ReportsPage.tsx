@@ -155,37 +155,43 @@ export function ReportsPage({ onBack, permissions = null }: { onBack?: () => voi
     </section>
 
     <form className="reports-filters" onSubmit={applyFilters}>
-      <label><span>Período</span><select value={draft.period} onChange={(event) => updateDraft('period', event.target.value as Period)}><option value="1">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="custom">Personalizado</option></select></label>
-      {draft.period === 'custom' && <><label><span>De</span><input type="date" value={draft.from} onChange={(event) => updateDraft('from', event.target.value)} /></label><label><span>Até</span><input type="date" value={draft.to} onChange={(event) => updateDraft('to', event.target.value)} /></label></>}
-      <label><span>Canal</span><select value={draft.channel} onChange={(event) => updateDraft('channel', event.target.value)}><option value="">Todos os canais</option><option value="whatsapp">WhatsApp</option><option value="webchat">Webchat</option><option value="telegram">Telegram</option></select></label>
-      <label><span>Setor</span><select value={draft.sectorID} onChange={(event) => updateDraft('sectorID', event.target.value)}><option value="">Todos os setores</option>{data.options.sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.name}</option>)}</select></label>
-      <label><span>Atendente</span><select value={draft.attendantID} onChange={(event) => updateDraft('attendantID', event.target.value)}><option value="">Toda a equipe</option>{data.options.attendants.map((attendant) => <option key={attendant.id} value={attendant.id}>{attendant.name}</option>)}</select></label>
+      <div className="reports-filter-group"><strong>Recorte</strong><div><label><span>Período</span><select value={draft.period} onChange={(event) => updateDraft('period', event.target.value as Period)}><option value="1">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="custom">Personalizado</option></select></label>{draft.period === 'custom' && <><label><span>De</span><input type="date" value={draft.from} onChange={(event) => updateDraft('from', event.target.value)} /></label><label><span>Até</span><input type="date" value={draft.to} onChange={(event) => updateDraft('to', event.target.value)} /></label></>}<label><span>Canal</span><select value={draft.channel} onChange={(event) => updateDraft('channel', event.target.value)}><option value="">Todos os canais</option><option value="whatsapp">WhatsApp</option><option value="webchat">Webchat</option><option value="telegram">Telegram</option></select></label></div></div>
+      <div className="reports-filter-group"><strong>Segmentação</strong><div><label><span>Setor</span><select value={draft.sectorID} onChange={(event) => updateDraft('sectorID', event.target.value)}><option value="">Todos os setores</option>{data.options.sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.name}</option>)}</select></label><label><span>Atendente</span><select value={draft.attendantID} onChange={(event) => updateDraft('attendantID', event.target.value)}><option value="">Toda a equipe</option>{data.options.attendants.map((attendant) => <option key={attendant.id} value={attendant.id}>{attendant.name}</option>)}</select></label></div></div>
       <button className="primary-button" type="submit">Aplicar filtros <Icon name="send" /></button>
     </form>
 
     {error && <div className="reports-alert" role="alert"><span><Icon name="alert-circle" /></span>{error}<button type="button" onClick={() => setError(null)} aria-label="Fechar aviso"><Icon name="close" /></button></div>}
     {loading && !reports ? <div className="reports-state"><span className="reports-spinner" /> Carregando visão analítica…</div> : <>
-      <section className="reports-kpis">
+      <section className="reports-metrics-block reports-metrics-block--primary">
+        <div className="reports-section-heading"><div><span className="eyebrow">Resumo do período</span><h3>Indicadores principais</h3></div><p>Uma leitura rápida de demanda, velocidade, satisfação e resolução.</p></div>
+        <div className="reports-kpis">
         <MetricCard icon="inbox" tone="blue" label="Conversas" value={formatNumber(data.summary.conversations)} detail={`${formatNumber(data.summary.active)} ativas · ${formatNumber(data.summary.closed)} encerradas`} />
-        <MetricCard icon="mail" tone="violet" label="Mensagens" value={formatNumber(data.summary.messages)} detail={`${formatNumber(data.summary.customer_messages)} cliente · ${formatNumber(data.summary.human_messages)} equipe`} />
-        <MetricCard icon="star" tone="amber" label="Nota geral" value={formatRating(data.summary.overall_rating, data.summary.overall_rating_count)} detail={`${formatNumber(data.summary.evaluated_conversations)} atendimentos avaliados`} featured />
+        <MetricCard icon="clock" tone="blue" label="Tempo médio de resposta" value={formatDuration(data.summary.avg_response_time)} detail={data.summary.avg_response_time_count > 0 ? `Primeira resposta em ${formatNumber(data.summary.avg_response_time_count)} atendimentos` : 'Sem respostas medidas no período'} />
+        <MetricCard icon="smile" tone="green" label="CSAT" value={formatPercent(data.summary.csat)} detail={`${formatNumber(data.summary.csat_satisfied)} de ${formatNumber(data.summary.csat_count)} notas ≥ 4`} featured />
+        <MetricCard icon="check" tone="teal" label="Taxa de encerramento" value={formatPercent(data.summary.resolution_rate)} detail={`${formatNumber(data.summary.resolved_count)} de ${formatNumber(data.summary.conversations)} conversas encerradas`} />
+        <MetricCard icon="alert-triangle" tone="amber" label="Abandono de fila" value={formatPercent(data.summary.queue_abandonment_rate)} detail={`${formatNumber(data.summary.queue_abandonment_count)} conversas abandonadas`} />
+        </div>
+      </section>
+
+      <section className="reports-metrics-block">
+        <div className="reports-section-heading"><div><span className="eyebrow">Experiência</span><h3>Qualidade percebida</h3></div><p>Notas gerais e comparação entre o atendimento da IA e da equipe.</p></div>
+        <div className="reports-kpis reports-kpis--secondary">
+        <MetricCard icon="star" tone="amber" label="Nota geral" value={formatRating(data.summary.overall_rating, data.summary.overall_rating_count)} detail={`${formatNumber(data.summary.evaluated_conversations)} atendimentos avaliados`} />
         <MetricCard icon="bot" tone="green" label="Assistente IA" value={formatRating(data.summary.ai_rating, data.summary.ai_rating_count)} detail={`${formatNumber(data.summary.ai_rating_count)} notas da IA`} />
         <MetricCard icon="users" tone="teal" label="Equipe humana" value={formatRating(data.summary.human_rating, data.summary.human_rating_count)} detail={`${formatNumber(data.summary.human_rating_count)} notas do operador`} />
-      </section>
-
-      <section className="reports-kpis">
-        <MetricCard icon="clock" tone="blue" label="Tempo médio de resposta" value={formatDuration(data.summary.avg_response_time)} detail={data.summary.avg_response_time_count > 0 ? `Primeira resposta em ${formatNumber(data.summary.avg_response_time_count)} atendimentos` : 'Sem respostas medidas no período'} />
-        <MetricCard icon="arrow-left-right" tone="violet" label="Transferência p/ humano" value={formatPercent(data.summary.transfer_rate)} detail={`${formatNumber(data.summary.transferred_count)} conversas transferidas`} />
         <MetricCard icon="target" tone="green" label="NPS" value={formatNPS(data.summary.nps)} detail={`${formatNumber(data.summary.nps_promoters)} promotores · ${formatNumber(data.summary.nps_detractors)} detratores`} />
-        <MetricCard icon="alert-triangle" tone="amber" label="Abandono de fila" value={formatPercent(data.summary.queue_abandonment_rate)} detail={`${formatNumber(data.summary.queue_abandonment_count)} conversas abandonadas`} />
+        </div>
       </section>
 
-      <section className="reports-kpis">
+      <section className="reports-metrics-block">
+        <div className="reports-section-heading"><div><span className="eyebrow">Diagnóstico</span><h3>Eficiência e automação</h3></div><p>Volume processado, tempos da fila e participação da IA no atendimento.</p></div>
+        <div className="reports-kpis reports-kpis--secondary">
+        <MetricCard icon="mail" tone="violet" label="Mensagens" value={formatNumber(data.summary.messages)} detail={`${formatNumber(data.summary.customer_messages)} cliente · ${formatNumber(data.summary.human_messages)} equipe`} />
         <MetricCard icon="clock" tone="teal" label="Tempo médio de espera" value={formatDuration(data.summary.avg_wait_time)} detail={data.summary.avg_wait_time_count > 0 ? `Espera por humano em ${formatNumber(data.summary.avg_wait_time_count)} atendimentos` : 'Sem espera humana medida'} />
         <MetricCard icon="activity" tone="teal" label="Tempo médio de atendimento" value={formatDuration(data.summary.avg_handling_time)} detail={data.summary.avg_handling_time_count > 0 ? `${formatNumber(data.summary.avg_handling_time_count)} atendimentos humanos` : 'Sem atendimento humano medido'} />
-        <MetricCard icon="smile" tone="green" label="CSAT" value={formatPercent(data.summary.csat)} detail={`${formatNumber(data.summary.csat_satisfied)} de ${formatNumber(data.summary.csat_count)} notas ≥ 4`} />
-        <MetricCard icon="check" tone="blue" label="Taxa de encerramento" value={formatPercent(data.summary.resolution_rate)} detail={`${formatNumber(data.summary.resolved_count)} de ${formatNumber(data.summary.conversations)} conversas encerradas`} />
+        <MetricCard icon="arrow-left-right" tone="violet" label="Transferência p/ humano" value={formatPercent(data.summary.transfer_rate)} detail={`${formatNumber(data.summary.transferred_count)} conversas transferidas`} />
         <MetricCard icon="bot" tone="violet" label="Resolução pela IA" value={formatPercent(data.summary.ai_resolution_rate)} detail={`${formatNumber(data.summary.ai_resolved_count)} IA · ${formatNumber(data.summary.human_resolved_count)} humano`} />
+        </div>
       </section>
 
       <section className="reports-main-grid">
